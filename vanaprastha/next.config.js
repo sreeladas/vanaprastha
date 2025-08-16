@@ -23,14 +23,29 @@ const nextConfig = {
   experimental: {
     reactCompiler: false,
   },
-  webpack: (webpackConfig) => {
-    webpackConfig.resolve.extensionAlias = {
+  webpack: (config) => {
+    config.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
       '.js': ['.ts', '.tsx', '.js', '.jsx'],
       '.mjs': ['.mts', '.mjs'],
     }
 
-    return webpackConfig
+    // Exclude .svg from Next’s default file loader
+    const fileLoaderRule = config.module.rules.find(
+      (rule) => rule.test instanceof RegExp && rule.test.test('.svg'),
+    )
+    if (fileLoaderRule) {
+      fileLoaderRule.exclude = /\.svg$/
+    }
+
+    // Add SVGR loader
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      use: ['@svgr/webpack'],
+    })
+
+    return config
   },
   reactStrictMode: true,
   redirects,
