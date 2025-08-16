@@ -1,0 +1,10 @@
+{
+	"dependencies": {
+		"@payloadcms/db-sqlite": "^3.52.0",
+		"@payloadcms/next": "^3.52.0",
+		"@payloadcms/richtext-lexical": "^3.52.0",
+		"graphql": "^16.11.0",
+		"payload": "^3.52.0",
+		"sharp": "^0.34.3"
+	}
+}
