@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { autoAssignToCollections } from '../hooks/autoAssignToCollections'
+import { removeFromCollections } from '../hooks/removeFromCollections'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -22,6 +23,10 @@ export const Media: CollectionConfig = {
     delete: authenticated,
     read: anyone,
     update: authenticated,
+  },
+  hooks: {
+    afterChange: [autoAssignToCollections],
+    afterDelete: [removeFromCollections],
   },
   fields: [
     {

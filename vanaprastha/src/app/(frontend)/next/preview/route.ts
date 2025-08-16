@@ -28,8 +28,14 @@ export async function GET(
     return new Response('You are not allowed to preview this page', { status: 403 })
   }
 
-  if (!path || !collection || !slug) {
-    return new Response('Insufficient search params', { status: 404 })
+  if (!path) {
+    return new Response('Path parameter is required', { status: 404 })
+  }
+
+  // For backwards compatibility, check if we have collection and slug params
+  // If not, we're likely previewing a standard page
+  if (collection && !slug) {
+    return new Response('Slug parameter is required when collection is provided', { status: 404 })
   }
 
   if (!path.startsWith('/')) {

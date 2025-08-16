@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { slugField } from '@/fields/slug'
+import { syncCollectionChanges } from '../hooks/syncCollectionChanges'
 
 export const Butterflies: CollectionConfig = {
   slug: 'butterflies',
@@ -15,6 +16,9 @@ export const Butterflies: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'updatedAt'],
+  },
+  hooks: {
+    afterChange: [syncCollectionChanges],
   },
   fields: [
     {

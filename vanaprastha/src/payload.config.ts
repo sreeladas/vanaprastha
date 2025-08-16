@@ -25,6 +25,7 @@ import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
+import { ensureCollectionPages } from './hooks/ensureCollectionPages'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -99,6 +100,15 @@ export default buildConfig({
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
+  },
+  onInit: async (payload) => {
+    // Create a mock request object for the hook
+    const req = {
+      payload,
+    } as any
+    
+    // Ensure all collection pages exist
+    await ensureCollectionPages(req)
   },
   jobs: {
     access: {

@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { slugField } from '@/fields/slug'
+import { syncCollectionChanges } from '../hooks/syncCollectionChanges'
 
 export const SeaShells: CollectionConfig = {
   slug: 'sea-shells',
@@ -15,6 +16,9 @@ export const SeaShells: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'updatedAt'],
+  },
+  hooks: {
+    afterChange: [syncCollectionChanges],
   },
   fields: [
     {
@@ -38,7 +42,8 @@ export const SeaShells: CollectionConfig = {
       name: 'galleryImages',
       type: 'array',
       admin: {
-        description: 'Gallery images - these will be auto-populated when media is tagged with this collection',
+        description:
+          'Gallery images - these will be auto-populated when media is tagged with this collection',
       },
       fields: [
         {
@@ -54,8 +59,8 @@ export const SeaShells: CollectionConfig = {
         {
           name: 'description',
           type: 'textarea',
-        }
-      ]
+        },
+      ],
     },
     ...slugField(),
   ],
