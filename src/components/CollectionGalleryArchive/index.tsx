@@ -22,7 +22,7 @@ export const CollectionGalleryArchive: React.FC<CollectionGalleryProps> = (props
     return (
       <div className={cn('container')}>
         <div className="text-center py-12">
-          <p className="text-gray-500">No images in this collection yet.</p>
+          <p className="text-gray-500">No items in this collection yet.</p>
         </div>
       </div>
     )
