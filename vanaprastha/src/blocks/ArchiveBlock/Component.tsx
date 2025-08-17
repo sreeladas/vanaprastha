@@ -6,13 +6,14 @@ import React from 'react'
 import RichText from '@/components/RichText'
 
 import { CollectionArchive } from '@/components/CollectionArchive'
+import { CollectionGalleryArchive } from '@/components/CollectionGalleryArchive'
 
 export const ArchiveBlock: React.FC<
   ArchiveBlockProps & {
     id?: string
   }
 > = async (props) => {
-  const { id, categories, introContent, limit: limitFromProps, populateBy, selectedDocs } = props
+  const { id, categories, introContent, limit: limitFromProps, populateBy, selectedDocs, relationTo } = props
 
   const limit = limitFromProps || 3
 
@@ -20,6 +21,7 @@ export const ArchiveBlock: React.FC<
 
   if (populateBy === 'collection') {
     const payload = await getPayload({ config: configPromise })
+    const targetCollection = relationTo || 'pages'
 
     const flattenedCategories = categories?.map((category) => {
       if (typeof category === 'object') return category.id
@@ -27,7 +29,7 @@ export const ArchiveBlock: React.FC<
     })
 
     const fetchedPages = await payload.find({
-      collection: 'pages',
+      collection: targetCollection as any,
       depth: 1,
       limit,
       ...(flattenedCategories && flattenedCategories.length > 0
@@ -52,6 +54,31 @@ export const ArchiveBlock: React.FC<
     }
   }
 
+  // Check if we're displaying a custom collection (with galleryImages)
+  const isCustomCollection = relationTo && relationTo !== 'pages'
+  const customCollectionSlugs = [
+    'bollywood-posters', 'butterflies', 'dokra-metal-craft', 'fossils', 
+    'masks', 'nekchand-works', 'paintings', 'photography', 
+    'sea-shells', 'wooden-works'
+  ]
+  
+  if (isCustomCollection && customCollectionSlugs.includes(relationTo) && pages.length > 0) {
+    // For custom collections, display the gallery from the first (and only) collection entry
+    const collectionEntry = pages[0] as any
+    
+    return (
+      <div className="my-16" id={`block-${id}`}>
+        {introContent && (
+          <div className="container mb-16">
+            <RichText className="ms-0 max-w-[48rem]" data={introContent} enableGutter={false} />
+          </div>
+        )}
+        <CollectionGalleryArchive collection={collectionEntry} />
+      </div>
+    )
+  }
+
+  // Default behavior for pages and other collections
   return (
     <div className="my-16" id={`block-${id}`}>
       {introContent && (

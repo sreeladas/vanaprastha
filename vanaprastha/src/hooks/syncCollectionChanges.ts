@@ -27,6 +27,16 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
       )
     )
 
+    // Find newly added images (not in previous gallery)
+    const addedImages = currentGallery.filter((currItem: any) => 
+      !previousGallery.some((prevItem: any) => 
+        (prevItem.image === currItem.image) || 
+        (prevItem.image?.id === currItem.image?.id) ||
+        (prevItem.image?.id === currItem.image) ||
+        (prevItem.image === currItem.image?.id)
+      )
+    )
+
     // Find images that had their caption/description updated
     const updatedImages = currentGallery.filter((currItem: any) => {
       const prevItem = previousGallery.find((prev: any) => 
@@ -41,6 +51,41 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
       return prevItem.caption !== currItem.caption || 
              prevItem.description !== currItem.description
     })
+
+    // Add collection tags to newly added media
+    for (const addedItem of addedImages) {
+      const imageId = typeof addedItem.image === 'string' ? addedItem.image : addedItem.image?.id
+      
+      if (imageId) {
+        try {
+          const mediaDoc = await payload.findByID({
+            collection: 'media',
+            id: imageId,
+          })
+
+          if (mediaDoc) {
+            const currentCollections = mediaDoc.collections || []
+            
+            // Add this collection if not already tagged
+            if (!currentCollections.includes(doc.slug)) {
+              const updatedCollections = [...currentCollections, doc.slug]
+
+              await payload.update({
+                collection: 'media',
+                id: imageId,
+                data: {
+                  collections: updatedCollections,
+                },
+              })
+
+              req.payload.logger.info(`Added ${doc.slug} tag to manually added media ${imageId}`)
+            }
+          }
+        } catch (error) {
+          req.payload.logger.error(`Failed to tag media ${imageId}:`, error)
+        }
+      }
+    }
 
     // Remove collection tags from media that were removed from gallery
     for (const removedItem of removedImages) {

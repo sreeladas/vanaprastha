@@ -30,21 +30,6 @@ const nextConfig = {
       '.mjs': ['.mts', '.mjs'],
     }
 
-    // Exclude .svg from Next’s default file loader
-    const fileLoaderRule = config.module.rules.find(
-      (rule) => rule.test instanceof RegExp && rule.test.test('.svg'),
-    )
-    if (fileLoaderRule) {
-      fileLoaderRule.exclude = /\.svg$/
-    }
-
-    // Add SVGR loader
-    config.module.rules.push({
-      test: /\.svg$/i,
-      issuer: /\.[jt]sx?$/,
-      use: ['@svgr/webpack'],
-    })
-
     return config
   },
   reactStrictMode: true,

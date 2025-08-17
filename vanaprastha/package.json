@@ -6,9 +6,11 @@
   "type": "module",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
+    "build:pages": "next build && next-on-pages build .",
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "dev:prod": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && pnpm build && pnpm start",
+    "deploy:pages": "echo 'Deployed via GitHub Actions'",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "ii": "cross-env NODE_OPTIONS=--no-deprecation pnpm --ignore-workspace install",
@@ -45,7 +47,7 @@
     "geist": "^1.3.0",
     "graphql": "^16.8.2",
     "lucide-react": "^0.378.0",
-    "next": "15.4.4",
+    "next": "15.4.6",
     "next-sitemap": "^4.2.3",
     "payload": "3.52.0",
     "prism-react-renderer": "^2.3.1",
@@ -57,9 +59,9 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.13",
     "@eslint/eslintrc": "^3.2.0",
     "@playwright/test": "1.54.1",
-    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/typography": "^0.5.13",
     "@testing-library/react": "16.3.0",
     "@types/escape-html": "^1.0.2",
@@ -82,7 +84,7 @@
     "vitest": "3.2.3"
   },
   "engines": {
-    "node": "^18.20.2 || >=20.9.0",
+    "node": " >=20.9.0",
     "pnpm": "^9 || ^10"
   },
   "pnpm": {

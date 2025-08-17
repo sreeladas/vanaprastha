@@ -54,6 +54,46 @@ export const Archive: Block = {
           label: 'Pages',
           value: 'pages',
         },
+        {
+          label: 'Bollywood Posters',
+          value: 'bollywood-posters',
+        },
+        {
+          label: 'Butterflies',
+          value: 'butterflies',
+        },
+        {
+          label: 'Dokra Metal Craft',
+          value: 'dokra-metal-craft',
+        },
+        {
+          label: 'Fossils',
+          value: 'fossils',
+        },
+        {
+          label: 'Masks',
+          value: 'masks',
+        },
+        {
+          label: 'Nek Chand Works',
+          value: 'nekchand-works',
+        },
+        {
+          label: 'Paintings',
+          value: 'paintings',
+        },
+        {
+          label: 'Photography',
+          value: 'photography',
+        },
+        {
+          label: 'Sea Shells',
+          value: 'sea-shells',
+        },
+        {
+          label: 'Wooden Works',
+          value: 'wooden-works',
+        },
       ],
     },
     {
@@ -84,7 +124,7 @@ export const Archive: Block = {
       },
       hasMany: true,
       label: 'Selection',
-      relationTo: ['pages'],
+      relationTo: ['pages', 'bollywood-posters', 'butterflies', 'dokra-metal-craft', 'fossils', 'masks', 'nekchand-works', 'paintings', 'photography', 'sea-shells', 'wooden-works'],
     },
   ],
   labels: {

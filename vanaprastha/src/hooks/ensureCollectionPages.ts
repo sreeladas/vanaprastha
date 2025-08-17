@@ -107,7 +107,7 @@ export const ensureCollectionPages = async (req: PayloadRequest): Promise<void> 
                           format: 0,
                           mode: 'normal',
                           style: '',
-                          text: `Explore our ${collectionTitles[collectionSlug as keyof typeof collectionTitles].toLowerCase()} collection.`,
+                          text: `Collection of ${collectionTitles[collectionSlug as keyof typeof collectionTitles].toLowerCase()} at Vanaprastha, curated by Surjit K. Das.`,
                           version: 1,
                         },
                       ],

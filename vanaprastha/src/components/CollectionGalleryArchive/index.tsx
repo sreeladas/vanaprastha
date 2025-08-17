@@ -31,25 +31,24 @@ export const CollectionGalleryArchive: React.FC<CollectionGalleryProps> = (props
   return (
     <div className={cn('container')}>
       <div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {galleryImages.map((item, index) => {
             return (
               <div key={index} className="group">
                 <article className="border border-border rounded-lg overflow-hidden bg-card hover:cursor-pointer h-full transition-all duration-200 hover:shadow-lg">
-                  <div className="relative aspect-square overflow-hidden">
+                  <div className="relative w-full overflow-hidden">
                     <Media
                       resource={item.image}
-                      className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-                      fill
+                      className="w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105"
                     />
                   </div>
                   {(item.caption || item.description) && (
-                    <div className="p-3">
+                    <div className="p-4">
                       {item.caption && (
-                        <h3 className="font-medium text-sm mb-1 line-clamp-2">{item.caption}</h3>
+                        <h3 className="font-medium text-base mb-2 line-clamp-2">{item.caption}</h3>
                       )}
                       {item.description && (
-                        <p className="text-xs text-gray-600 line-clamp-3">{item.description}</p>
+                        <p className="text-sm text-gray-600 line-clamp-3">{item.description}</p>
                       )}
                     </div>
                   )}
