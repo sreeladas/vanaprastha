@@ -61,6 +61,21 @@ export type SupportedTimezones =
   | 'Pacific/Auckland'
   | 'Pacific/Fiji';
 
+export const automatedCollections = [
+  'bollywood-posters',
+  'butterflies',
+  'dokra-metal-craft',
+  'fossils',
+  'masks',
+  'nekchand-works',
+  'paintings',
+  'photography',
+  'sea-shells',
+  'wooden-works',
+] as const
+
+export type AutomatedCollections = (typeof automatedCollections)[number]
+
 export interface Config {
   auth: {
     users: UserAuthOperations;
@@ -121,10 +136,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    homepage: Homepage;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    homepage: HomepageSelect<false> | HomepageSelect<true>;
   };
   locale: null;
   user: User & {
@@ -246,18 +263,7 @@ export interface Media {
    * Tag this image with collections to automatically add it to those galleries
    */
   collections?:
-    | (
-        | 'bollywood-posters'
-        | 'butterflies'
-        | 'dokra-metal-craft'
-        | 'fossils'
-        | 'masks'
-        | 'nekchand-works'
-        | 'paintings'
-        | 'photography'
-        | 'sea-shells'
-        | 'wooden-works'
-      )[]
+    | AutomatedCollections[]
     | null;
   updatedAt: string;
   createdAt: string;
@@ -451,16 +457,7 @@ export interface ArchiveBlock {
   relationTo?:
     | (
         | 'pages'
-        | 'bollywood-posters'
-        | 'butterflies'
-        | 'dokra-metal-craft'
-        | 'fossils'
-        | 'masks'
-        | 'nekchand-works'
-        | 'paintings'
-        | 'photography'
-        | 'sea-shells'
-        | 'wooden-works'
+        | AutomatedCollections
       )
     | null;
   categories?: (number | Category)[] | null;
@@ -2116,6 +2113,19 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage".
+ */
+export interface Homepage {
+  id: number;
+  /**
+   * Introduction text displayed below the Vanaprastha title
+   */
+  description?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2156,6 +2166,16 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage_select".
+ */
+export interface HomepageSelect<T extends boolean = true> {
+  description?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -2,13 +2,16 @@
 import { cn } from '@/utilities/ui'
 import useClickableCard from '@/utilities/useClickableCard'
 import Link from 'next/link'
-import React, { Fragment } from 'react'
+import React from 'react'
 
-import type { Page } from '@/payload-types'
+import type { Media as MediaType, Page } from '@/payload-types'
 
 import { Media } from '@/components/Media'
 
-export type CardPageData = Pick<Page, 'slug' | 'meta' | 'title'>
+export type CardPageData = Pick<Page, 'slug' | 'meta' | 'title'> & {
+  heroImage?: number | MediaType
+  galleryImages?: { image: number | MediaType }[]
+}
 
 export const Card: React.FC<{
   alignItems?: 'center'
@@ -19,7 +22,7 @@ export const Card: React.FC<{
   title?: string
 }> = (props) => {
   const { card, link } = useClickableCard({})
-  const { className, doc, relationTo, showCategories, title: titleFromProps } = props
+  const { className, doc, relationTo, title: titleFromProps } = props
 
   const { slug, meta, title } = doc || {}
   const { description, image: metaImage } = meta || {}
@@ -36,9 +39,15 @@ export const Card: React.FC<{
       )}
       ref={card.ref}
     >
-      <div className="relative w-full ">
-        {!metaImage && <div className="">No image</div>}
-        {metaImage && typeof metaImage !== 'string' && <Media resource={metaImage} size="33vw" />}
+      <div className="relative w-full aspect-video flex items-center justify-center overflow-hidden">
+        {!metaImage && <div className="text-gray-400">No image</div>}
+        {metaImage && typeof metaImage !== 'string' && (
+          <Media
+            resource={metaImage}
+            size="33vw"
+            imgClassName="w-full h-full object-cover object-center"
+          />
+        )}
       </div>
       <div className="p-4">
         {titleToUse && (

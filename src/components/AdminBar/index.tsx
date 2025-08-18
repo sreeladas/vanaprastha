@@ -19,10 +19,6 @@ const collectionLabels = {
     plural: 'Pages',
     singular: 'Page',
   },
-  pages: {
-    plural: 'Pages',
-    singular: 'Page',
-  },
   projects: {
     plural: 'Projects',
     singular: 'Project',

@@ -18,44 +18,51 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
     const previousGallery = previousDoc?.galleryImages || []
 
     // Find images that were removed from the gallery
-    const removedImages = previousGallery.filter((prevItem: any) => 
-      !currentGallery.some((currItem: any) => 
-        (currItem.image === prevItem.image) || 
-        (currItem.image?.id === prevItem.image?.id) ||
-        (currItem.image?.id === prevItem.image) ||
-        (currItem.image === prevItem.image?.id)
-      )
+    const removedImages = previousGallery.filter(
+      /* eslint-disable  @typescript-eslint/no-explicit-any */
+      (prevItem: any) =>
+        !currentGallery.some(
+          (currItem: any) =>
+            currItem.image === prevItem.image ||
+            currItem.image?.id === prevItem.image?.id ||
+            currItem.image?.id === prevItem.image ||
+            currItem.image === prevItem.image?.id,
+        ),
     )
 
     // Find newly added images (not in previous gallery)
-    const addedImages = currentGallery.filter((currItem: any) => 
-      !previousGallery.some((prevItem: any) => 
-        (prevItem.image === currItem.image) || 
-        (prevItem.image?.id === currItem.image?.id) ||
-        (prevItem.image?.id === currItem.image) ||
-        (prevItem.image === currItem.image?.id)
-      )
+    const addedImages = currentGallery.filter(
+      /* eslint-disable  @typescript-eslint/no-explicit-any */
+      (currItem: any) =>
+        !previousGallery.some(
+          (prevItem: any) =>
+            prevItem.image === currItem.image ||
+            prevItem.image?.id === currItem.image?.id ||
+            prevItem.image?.id === currItem.image ||
+            prevItem.image === currItem.image?.id,
+        ),
     )
 
     // Find images that had their caption/description updated
+    /* eslint-disable  @typescript-eslint/no-explicit-any */
     const updatedImages = currentGallery.filter((currItem: any) => {
-      const prevItem = previousGallery.find((prev: any) => 
-        (prev.image === currItem.image) || 
-        (prev.image?.id === currItem.image?.id) ||
-        (prev.image?.id === currItem.image) ||
-        (prev.image === currItem.image?.id)
+      const prevItem = previousGallery.find(
+        (prev: any) =>
+          prev.image === currItem.image ||
+          prev.image?.id === currItem.image?.id ||
+          prev.image?.id === currItem.image ||
+          prev.image === currItem.image?.id,
       )
-      
+
       if (!prevItem) return false
-      
-      return prevItem.caption !== currItem.caption || 
-             prevItem.description !== currItem.description
+
+      return prevItem.caption !== currItem.caption || prevItem.description !== currItem.description
     })
 
     // Add collection tags to newly added media
     for (const addedItem of addedImages) {
       const imageId = typeof addedItem.image === 'string' ? addedItem.image : addedItem.image?.id
-      
+
       if (imageId) {
         try {
           const mediaDoc = await payload.findByID({
@@ -65,7 +72,7 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
 
           if (mediaDoc) {
             const currentCollections = mediaDoc.collections || []
-            
+
             // Add this collection if not already tagged
             if (!currentCollections.includes(doc.slug)) {
               const updatedCollections = [...currentCollections, doc.slug]
@@ -89,8 +96,9 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
 
     // Remove collection tags from media that were removed from gallery
     for (const removedItem of removedImages) {
-      const imageId = typeof removedItem.image === 'string' ? removedItem.image : removedItem.image?.id
-      
+      const imageId =
+        typeof removedItem.image === 'string' ? removedItem.image : removedItem.image?.id
+
       if (imageId) {
         try {
           const mediaDoc = await payload.findByID({
@@ -100,7 +108,7 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
 
           if (mediaDoc && mediaDoc.collections) {
             const updatedCollections = mediaDoc.collections.filter(
-              (slug: string) => slug !== doc.slug
+              (slug: string) => slug !== doc.slug,
             )
 
             await payload.update({
@@ -121,8 +129,9 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
 
     // Update media fields when gallery captions/descriptions change
     for (const updatedItem of updatedImages) {
-      const imageId = typeof updatedItem.image === 'string' ? updatedItem.image : updatedItem.image?.id
-      
+      const imageId =
+        typeof updatedItem.image === 'string' ? updatedItem.image : updatedItem.image?.id
+
       if (imageId) {
         try {
           const mediaDoc = await payload.findByID({
@@ -132,8 +141,9 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
 
           if (mediaDoc) {
             // Field mapping: collection.caption -> media.alt, collection.description -> media.caption
+            /* eslint-disable  @typescript-eslint/no-explicit-any */
             const updateData: any = {}
-            
+
             // Update alt text if caption changed
             if (updatedItem.caption && updatedItem.caption !== mediaDoc.alt) {
               updateData.alt = updatedItem.caption
@@ -145,19 +155,21 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
               const richTextCaption = {
                 root: {
                   type: 'root',
-                  children: updatedItem.description ? [
-                    {
-                      type: 'paragraph',
-                      children: [
+                  children: updatedItem.description
+                    ? [
                         {
-                          type: 'text',
-                          text: updatedItem.description,
+                          type: 'paragraph',
+                          children: [
+                            {
+                              type: 'text',
+                              text: updatedItem.description,
+                              version: 1,
+                            },
+                          ],
                           version: 1,
                         },
-                      ],
-                      version: 1,
-                    },
-                  ] : [],
+                      ]
+                    : [],
                   version: 1,
                 },
               }
@@ -171,7 +183,9 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
                 data: updateData,
               })
 
-              req.payload.logger.info(`Updated media ${imageId} from collection ${doc.slug} changes`)
+              req.payload.logger.info(
+                `Updated media ${imageId} from collection ${doc.slug} changes`,
+              )
             }
           }
         } catch (error) {

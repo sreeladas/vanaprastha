@@ -1,15 +1,13 @@
+import { AutomatedCollections } from '@/payload-types'
 import type { CollectionAfterDeleteHook } from 'payload'
 
-export const removeFromCollections: CollectionAfterDeleteHook = async ({
-  doc,
-  req,
-}) => {
+export const removeFromCollections: CollectionAfterDeleteHook = async ({ doc, req }) => {
   const { payload } = req
 
   // Get all collection slugs to clean up
   const collectionSlugs = [
     'bollywood-posters',
-    'butterflies', 
+    'butterflies',
     'dokra-metal-craft',
     'fossils',
     'masks',
@@ -24,7 +22,7 @@ export const removeFromCollections: CollectionAfterDeleteHook = async ({
     // Remove this image from all collections
     for (const collectionSlug of collectionSlugs) {
       const collectionEntries = await payload.find({
-        collection: collectionSlug,
+        collection: collectionSlug as AutomatedCollections,
         limit: 1,
         pagination: false,
       })
@@ -34,21 +32,24 @@ export const removeFromCollections: CollectionAfterDeleteHook = async ({
         const existingGallery = collectionEntry.galleryImages || []
 
         // Filter out this image from the gallery
-        const updatedGallery = existingGallery.filter((item: any) => 
-          item.image !== doc.id && item.image?.id !== doc.id
+        const updatedGallery = existingGallery.filter(
+          /* eslint-disable  @typescript-eslint/no-explicit-any */
+          (item: any) => item.image !== doc.id && item.image?.id !== doc.id,
         )
 
         // Update the collection if the gallery changed
         if (updatedGallery.length !== existingGallery.length) {
           await payload.update({
-            collection: collectionSlug,
+            collection: collectionSlug as AutomatedCollections,
             id: collectionEntry.id,
             data: {
               galleryImages: updatedGallery,
             },
           })
 
-          req.payload.logger.info(`Removed deleted image ${doc.filename} from ${collectionSlug} collection`)
+          req.payload.logger.info(
+            `Removed deleted image ${doc.filename} from ${collectionSlug} collection`,
+          )
         }
       }
     }

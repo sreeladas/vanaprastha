@@ -1,11 +1,15 @@
 import { CollectionSlug, getPayload } from 'payload'
 import configPromise from '@payload-config'
 import React from 'react'
-import Link from 'next/link'
 import { Card, CardPageData } from '@/components/Card'
 
 export default async function HomePage() {
   const payload = await getPayload({ config: configPromise })
+
+  // Fetch homepage global data for editable description
+  const homepageData = await payload.findGlobal({
+    slug: 'homepage',
+  })
 
   const collections = [
     'nekchand-works',
@@ -24,8 +28,18 @@ export default async function HomePage() {
     collections.map(async (collection) => {
       const docs = await payload.find({
         collection,
-        limit: 10,
-        select: { slug: true, title: true, hero: true, caption: true, description: true, id: true },
+        limit: 1,
+        select: {
+          slug: true,
+          title: true,
+          hero: true,
+          heroImage: true,
+          galleryImages: { image: true },
+          caption: true,
+          description: true,
+          meta: true,
+          id: true,
+        },
       })
       return {
         collectionTitle: collection,
@@ -37,16 +51,35 @@ export default async function HomePage() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen pt-16 pb-24">
       <h1 className="text-3xl font-bold mb-8 text-center">Vanaprastha</h1>
-      <div className="flex flex-col gap-12 w-full max-w-5xl">
-        {collectionData.map(({ collectionTitle, pages }) => (
-          <div key={collectionTitle} className="w-full">
-            {pages.map((page, index) => (
-              <Link key={index} href={`/${collectionTitle}`} className="group">
-                <Card className="h-full" doc={page} showCategories />
-              </Link>
-            ))}
-          </div>
-        ))}
+      {homepageData?.description && (
+        <p className="text-lg text-center mb-12 max-w-3xl">{homepageData.description}</p>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl px-4">
+        {collectionData.map(({ collectionTitle, pages }) =>
+          pages.map((page, index) => {
+            // Determine hero image with fallback
+            const heroImage =
+              page.heroImage || page.heroImage || (page.galleryImages?.[0]?.image ?? null)
+
+            const pageWithHero = {
+              ...page,
+              slug: collectionTitle,
+              meta: {
+                ...page.meta,
+                image: heroImage,
+              },
+            }
+
+            return (
+              <Card
+                key={`${collectionTitle}-${index}`}
+                className="h-full"
+                doc={pageWithHero}
+                showCategories
+              />
+            )
+          }),
+        )}
       </div>
     </main>
   )

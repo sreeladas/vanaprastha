@@ -1,5 +1,5 @@
 // storage-adapter-import-placeholder
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 
 import sharp from 'sharp' // sharp-import
 import path from 'path'
@@ -22,6 +22,7 @@ import { SeaShells } from './collections/SeaShells'
 import { WoodenWorks } from './collections/WoodenWorks'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { Homepage } from './globals/Homepage'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -32,14 +33,7 @@ const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
-    components: {
-      // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
-      // Feel free to delete this at any time. Simply remove the line below.
-      beforeLogin: ['@/components/BeforeLogin'],
-      // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
-      // Feel free to delete this at any time. Simply remove the line below.
-      beforeDashboard: ['@/components/BeforeDashboard'],
-    },
+    components: {},
     importMap: {
       baseDir: path.resolve(dirname),
     },
@@ -69,9 +63,10 @@ export default buildConfig({
   },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URI || '',
+  db: postgresAdapter({
+    pool: {
+      connectionString:
+        process.env.DATABASE_URI || 'postgresql://payload:payload@localhost:5432/payload',
     },
   }),
   collections: [
@@ -91,7 +86,7 @@ export default buildConfig({
     Users,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer],
+  globals: [Header, Footer, Homepage],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder
@@ -105,8 +100,9 @@ export default buildConfig({
     // Create a mock request object for the hook
     const req = {
       payload,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any
-    
+
     // Ensure all collection pages exist
     await ensureCollectionPages(req)
   },

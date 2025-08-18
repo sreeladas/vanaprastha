@@ -1,3 +1,4 @@
+import { AutomatedCollections } from '@/payload-types'
 import type { PayloadRequest } from 'payload'
 
 const collectionSlugs = [
@@ -33,6 +34,7 @@ export const ensureCollectionPages = async (req: PayloadRequest): Promise<void> 
     try {
       // Check if collection entry already exists
       const existingCollection = await payload.find({
+        /* eslint-disable  @typescript-eslint/no-explicit-any */
         collection: collectionSlug as any,
         limit: 1,
         pagination: false,
@@ -41,6 +43,7 @@ export const ensureCollectionPages = async (req: PayloadRequest): Promise<void> 
       // If no collection entry exists, create the default collection entry
       if (existingCollection.docs.length === 0) {
         await payload.create({
+          /* eslint-disable  @typescript-eslint/no-explicit-any */
           collection: collectionSlug as any,
           data: {
             title: collectionTitles[collectionSlug as keyof typeof collectionTitles],
@@ -161,13 +164,13 @@ export const ensureCollectionPages = async (req: PayloadRequest): Promise<void> 
                   },
                 },
                 populateBy: 'collection',
-                relationTo: collectionSlug,
+                relationTo: collectionSlug as AutomatedCollections,
                 categories: [],
               },
             ],
             meta: {
               title: collectionTitles[collectionSlug as keyof typeof collectionTitles],
-              description: `Explore our ${collectionTitles[collectionSlug as keyof typeof collectionTitles].toLowerCase()} collection.`,
+              description: `The collection of ${collectionTitles[collectionSlug as keyof typeof collectionTitles].toLowerCase()} at Vanaprastha, curated by Surjit K. Das.`,
             },
           },
         })

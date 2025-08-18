@@ -13,7 +13,15 @@ export const ArchiveBlock: React.FC<
     id?: string
   }
 > = async (props) => {
-  const { id, categories, introContent, limit: limitFromProps, populateBy, selectedDocs, relationTo } = props
+  const {
+    id,
+    categories,
+    introContent,
+    limit: limitFromProps,
+    populateBy,
+    selectedDocs,
+    relationTo,
+  } = props
 
   const limit = limitFromProps || 3
 
@@ -29,6 +37,7 @@ export const ArchiveBlock: React.FC<
     })
 
     const fetchedPages = await payload.find({
+      /* eslint-disable  @typescript-eslint/no-explicit-any */
       collection: targetCollection as any,
       depth: 1,
       limit,
@@ -57,15 +66,23 @@ export const ArchiveBlock: React.FC<
   // Check if we're displaying a custom collection (with galleryImages)
   const isCustomCollection = relationTo && relationTo !== 'pages'
   const customCollectionSlugs = [
-    'bollywood-posters', 'butterflies', 'dokra-metal-craft', 'fossils', 
-    'masks', 'nekchand-works', 'paintings', 'photography', 
-    'sea-shells', 'wooden-works'
+    'bollywood-posters',
+    'butterflies',
+    'dokra-metal-craft',
+    'fossils',
+    'masks',
+    'nekchand-works',
+    'paintings',
+    'photography',
+    'sea-shells',
+    'wooden-works',
   ]
-  
+
   if (isCustomCollection && customCollectionSlugs.includes(relationTo) && pages.length > 0) {
     // For custom collections, display the gallery from the first (and only) collection entry
+    /* eslint-disable  @typescript-eslint/no-explicit-any */
     const collectionEntry = pages[0] as any
-    
+
     return (
       <div className="my-16" id={`block-${id}`}>
         {introContent && (
