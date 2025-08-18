@@ -1,4 +1,4 @@
-# To use this Dockerfile, you have to set `output: 'standalone'` in your next.config.js file.
+# Base image
 FROM node:22.17.0-alpine AS base
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
@@ -14,25 +14,35 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Only build if not dev
 ARG NODE_ENV=development
 ENV NODE_ENV=$NODE_ENV
 
+# Only build for production
 RUN if [ "$NODE_ENV" = "production" ]; then pnpm run build; fi
 
 # Runner
 FROM base AS runner
-ENV NODE_ENV=production
-RUN addgroup --system --gid 1001 nodejs \
- && adduser --system --uid 1001 nextjs
+ARG NODE_ENV=development
+ENV NODE_ENV=$NODE_ENV
+
+COPY --from=builder /app/node_modules ./node_modules
+
+# Add local binaries to PATH
+ENV PATH=/app/node_modules/.bin:$PATH
+
 WORKDIR /app
 
-# Copy public + build output (for production)
+# Copy public + build output
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/.next/static ./.next/static
 
-USER nextjs
+# Only copy standalone for production
+RUN if [ "$NODE_ENV" = "production" ] && [ -d /app/.next/standalone ]; then \
+      cp -r /app/.next/standalone ./; \
+    fi
+
 EXPOSE 3000
 ENV PORT=3000
+
+# Dev vs prod command
 CMD if [ "$NODE_ENV" = "production" ]; then node server.js; else pnpm dev; fi

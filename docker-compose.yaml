@@ -1,34 +1,36 @@
 services:
-  payload:
+  app:
     build:
       context: .
       args:
         NODE_ENV: ${NODE_ENV:-development}
-    container_name: payload-app
+    container_name: payload
     restart: unless-stopped
     ports:
       - '3000:3000'
     volumes:
       - .:/app
+      - next_cache:/app/.next
       - node_modules:/app/node_modules
     depends_on:
-      - postgres
+      - db
     env_file:
       - .env
 
-  postgres:
+  db:
     image: postgres:17
     ports:
       - '5432:5432'
-    container_name: payload-postgres
+    container_name: payload-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: payload
-      POSTGRES_PASSWORD: payload
-      POSTGRES_DB: payload
+      POSTGRES_USER: vanaprastha
+      POSTGRES_PASSWORD: vanaprastha
+      POSTGRES_DB: vanaprastha
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
 volumes:
   postgres_data:
   node_modules:
+  next_cache:

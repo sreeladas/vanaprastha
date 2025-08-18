@@ -61,21 +61,6 @@ export type SupportedTimezones =
   | 'Pacific/Auckland'
   | 'Pacific/Fiji';
 
-export const automatedCollections = [
-  'bollywood-posters',
-  'butterflies',
-  'dokra-metal-craft',
-  'fossils',
-  'masks',
-  'nekchand-works',
-  'paintings',
-  'photography',
-  'sea-shells',
-  'wooden-works',
-] as const
-
-export type AutomatedCollections = (typeof automatedCollections)[number]
-
 export interface Config {
   auth: {
     users: UserAuthOperations;
@@ -263,7 +248,18 @@ export interface Media {
    * Tag this image with collections to automatically add it to those galleries
    */
   collections?:
-    | AutomatedCollections[]
+    | (
+        | 'bollywood-posters'
+        | 'butterflies'
+        | 'dokra-metal-craft'
+        | 'fossils'
+        | 'masks'
+        | 'nekchand-works'
+        | 'paintings'
+        | 'photography'
+        | 'sea-shells'
+        | 'wooden-works'
+      )[]
     | null;
   updatedAt: string;
   createdAt: string;
@@ -457,7 +453,16 @@ export interface ArchiveBlock {
   relationTo?:
     | (
         | 'pages'
-        | AutomatedCollections
+        | 'bollywood-posters'
+        | 'butterflies'
+        | 'dokra-metal-craft'
+        | 'fossils'
+        | 'masks'
+        | 'nekchand-works'
+        | 'paintings'
+        | 'photography'
+        | 'sea-shells'
+        | 'wooden-works'
       )
     | null;
   categories?: (number | Category)[] | null;
