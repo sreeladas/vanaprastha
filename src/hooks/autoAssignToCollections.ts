@@ -14,6 +14,11 @@ export const autoAssignToCollections: CollectionAfterChangeHook = async ({
   const currentCollections = doc.collections || []
   const previousCollections = previousDoc?.collections || []
 
+  // Skip if no collection changes
+  if (JSON.stringify(currentCollections) === JSON.stringify(previousCollections)) {
+    return doc
+  }
+
   const { payload } = req
 
   try {
@@ -55,55 +60,62 @@ export const autoAssignToCollections: CollectionAfterChangeHook = async ({
 
     // Add image to newly tagged collections
     for (const collectionSlug of addedCollections) {
-      const collectionEntries = await payload.find({
-        collection: collectionSlug,
-        limit: 1,
-        pagination: false,
-      })
+      try {
+        const collectionEntries = await payload.find({
+          collection: collectionSlug,
+          limit: 1,
+          pagination: false,
+        })
 
-      if (collectionEntries.docs.length > 0) {
-        const collectionEntry = collectionEntries.docs[0]
-        const existingGallery = collectionEntry.galleryImages || []
+        if (collectionEntries.docs.length > 0) {
+          const collectionEntry = collectionEntries.docs[0]
+          const existingGallery = collectionEntry.galleryImages || []
 
-        // Check if this image is already in the gallery
-        const imageExists = existingGallery.some(
-          (item: any) => item.image === doc.id || item.image?.id === doc.id,
-        )
+          // Check if this image is already in the gallery
+          const imageExists = existingGallery.some(
+            (item: any) => item.image === doc.id || item.image?.id === doc.id,
+          )
 
-        if (!imageExists) {
-          // Add the new image to the gallery
-          // Field mapping: media.alt -> collection.caption, media.caption -> collection.description
-          const newGalleryItem = {
-            image: doc.id,
-            caption: doc.alt || doc.filename || '',
-            description: extractCaptionText(doc.caption),
+          if (!imageExists) {
+            // Add the new image to the gallery
+            // Field mapping: media.alt -> collection.caption, media.caption -> collection.description
+            const newGalleryItem = {
+              image: doc.id,
+              caption: doc.alt || doc.filename || '',
+              description: extractCaptionText(doc.caption),
+            }
+
+            const updatedGallery = [...existingGallery, newGalleryItem]
+
+            // Update the collection with the new gallery
+            await payload.update({
+              collection: collectionSlug,
+              id: collectionEntry.id,
+              data: {
+                galleryImages: updatedGallery,
+              },
+            })
+
+            req.payload.logger.info(`Added image ${doc.filename} to ${collectionSlug} collection`)
           }
-
-          const updatedGallery = [...existingGallery, newGalleryItem]
-
-          // Update the collection with the new gallery
-          await payload.update({
-            collection: collectionSlug,
-            id: collectionEntry.id,
-            data: {
-              galleryImages: updatedGallery,
-            },
-          })
-
-          req.payload.logger.info(`Added image ${doc.filename} to ${collectionSlug} collection`)
+        } else {
+          req.payload.logger.warn(`Collection ${collectionSlug} not found or empty`)
         }
+      } catch (collectionError) {
+        req.payload.logger.error(`Error adding image to ${collectionSlug}:`, collectionError)
       }
     }
 
     // Update existing gallery items when media fields change
     for (const collectionSlug of unchangedCollections) {
-      const collectionEntries = await payload.find({
-        collection: collectionSlug,
-        limit: 1,
-        pagination: false,
-      })
+      try {
+        const collectionEntries = await payload.find({
+          collection: collectionSlug,
+          limit: 1,
+          pagination: false,
+        })
 
-      if (collectionEntries.docs.length > 0) {
+        if (collectionEntries.docs.length > 0) {
         const collectionEntry = collectionEntries.docs[0]
         const existingGallery = collectionEntry.galleryImages || []
 
@@ -132,38 +144,49 @@ export const autoAssignToCollections: CollectionAfterChangeHook = async ({
 
           req.payload.logger.info(`Updated image ${doc.filename} in ${collectionSlug} collection`)
         }
+        } else {
+          req.payload.logger.warn(`Collection ${collectionSlug} not found for update`)
+        }
+      } catch (collectionError) {
+        req.payload.logger.error(`Error updating image in ${collectionSlug}:`, collectionError)
       }
     }
 
     // Remove image from untagged collections
     for (const collectionSlug of removedCollections) {
-      const collectionEntries = await payload.find({
-        collection: collectionSlug,
-        limit: 1,
-        pagination: false,
-      })
+      try {
+        const collectionEntries = await payload.find({
+          collection: collectionSlug,
+          limit: 1,
+          pagination: false,
+        })
 
-      if (collectionEntries.docs.length > 0) {
-        const collectionEntry = collectionEntries.docs[0]
-        const existingGallery = collectionEntry.galleryImages || []
+        if (collectionEntries.docs.length > 0) {
+          const collectionEntry = collectionEntries.docs[0]
+          const existingGallery = collectionEntry.galleryImages || []
 
-        // Filter out this image from the gallery
-        const updatedGallery = existingGallery.filter(
-          (item: any) => item.image !== doc.id && item.image?.id !== doc.id,
-        )
+          // Filter out this image from the gallery
+          const updatedGallery = existingGallery.filter(
+            (item: any) => item.image !== doc.id && item.image?.id !== doc.id,
+          )
 
-        // Update the collection if the gallery changed
-        if (updatedGallery.length !== existingGallery.length) {
-          await payload.update({
-            collection: collectionSlug,
-            id: collectionEntry.id,
-            data: {
-              galleryImages: updatedGallery,
-            },
-          })
+          // Update the collection if the gallery changed
+          if (updatedGallery.length !== existingGallery.length) {
+            await payload.update({
+              collection: collectionSlug,
+              id: collectionEntry.id,
+              data: {
+                galleryImages: updatedGallery,
+              },
+            })
 
-          req.payload.logger.info(`Removed image ${doc.filename} from ${collectionSlug} collection`)
+            req.payload.logger.info(`Removed image ${doc.filename} from ${collectionSlug} collection`)
+          }
+        } else {
+          req.payload.logger.warn(`Collection ${collectionSlug} not found for removal`)
         }
+      } catch (collectionError) {
+        req.payload.logger.error(`Error removing image from ${collectionSlug}:`, collectionError)
       }
     }
   } catch (error) {
