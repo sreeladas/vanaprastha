@@ -28,6 +28,25 @@ export const Media: CollectionConfig = {
     afterChange: [autoAssignToCollections],
     afterDelete: [removeFromCollections],
   },
+  admin: {
+    components: {
+      views: {
+        list: {
+          actions: [
+            {
+              path: '@/components/EnhancedBulkUpload',
+              exportName: 'default',
+            },
+            {
+              path: '@/components/EnhancedBulkUpload/MetadataEditor',
+              exportName: 'EditMetadataButton',
+            },
+          ],
+        },
+      },
+    },
+  },
+
   fields: [
     {
       name: 'alt',
