@@ -1,28 +1,22 @@
-import { AutomatedCollections } from '@/payload-types'
-import type { CollectionAfterDeleteHook } from 'payload'
+import type { CollectionAfterDeleteHook, CollectionSlug } from 'payload'
+import { getCollectionSlugs } from '@/config/collections'
 
 export const removeFromCollections: CollectionAfterDeleteHook = async ({ doc, req }) => {
   const { payload } = req
 
+  // Prevent infinite loops - skip if this update was triggered by a hook
+  if (req.context?.skipHooks || req.context?.fromHook) {
+    return doc
+  }
+
   // Get all collection slugs to clean up
-  const collectionSlugs = [
-    'bollywood-posters',
-    'butterflies',
-    'dokra-metal-craft',
-    'fossils',
-    'masks',
-    'nekchand-works',
-    'paintings',
-    'photography',
-    'sea-shells',
-    'wooden-works',
-  ]
+  const collectionSlugs = getCollectionSlugs()
 
   try {
     // Remove this image from all collections
     for (const collectionSlug of collectionSlugs) {
       const collectionEntries = await payload.find({
-        collection: collectionSlug as AutomatedCollections,
+        collection: collectionSlug as CollectionSlug,
         limit: 1,
         pagination: false,
       })
@@ -40,10 +34,14 @@ export const removeFromCollections: CollectionAfterDeleteHook = async ({ doc, re
         // Update the collection if the gallery changed
         if (updatedGallery.length !== existingGallery.length) {
           await payload.update({
-            collection: collectionSlug as AutomatedCollections,
+            collection: collectionSlug as CollectionSlug,
             id: collectionEntry.id,
             data: {
               galleryImages: updatedGallery,
+            },
+            context: {
+              ...req.context,
+              fromHook: true,
             },
           })
 

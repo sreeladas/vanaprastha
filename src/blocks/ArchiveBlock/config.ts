@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { AUTOMATED_COLLECTIONS, COLLECTION_SLUGS } from '@/config/collections'
 
 import {
   FixedToolbarFeature,
@@ -54,46 +55,10 @@ export const Archive: Block = {
           label: 'Pages',
           value: 'pages',
         },
-        {
-          label: 'Bollywood Posters',
-          value: 'bollywood-posters',
-        },
-        {
-          label: 'Butterflies',
-          value: 'butterflies',
-        },
-        {
-          label: 'Dokra Metal Craft',
-          value: 'dokra-metal-craft',
-        },
-        {
-          label: 'Fossils',
-          value: 'fossils',
-        },
-        {
-          label: 'Masks',
-          value: 'masks',
-        },
-        {
-          label: 'Nek Chand Works',
-          value: 'nekchand-works',
-        },
-        {
-          label: 'Paintings',
-          value: 'paintings',
-        },
-        {
-          label: 'Photography',
-          value: 'photography',
-        },
-        {
-          label: 'Sea Shells',
-          value: 'sea-shells',
-        },
-        {
-          label: 'Wooden Works',
-          value: 'wooden-works',
-        },
+        ...AUTOMATED_COLLECTIONS.map((collection) => ({
+          label: collection.title,
+          value: collection.slug,
+        })),
       ],
     },
     {
@@ -124,7 +89,7 @@ export const Archive: Block = {
       },
       hasMany: true,
       label: 'Selection',
-      relationTo: ['pages', 'bollywood-posters', 'butterflies', 'dokra-metal-craft', 'fossils', 'masks', 'nekchand-works', 'paintings', 'photography', 'sea-shells', 'wooden-works'],
+      relationTo: ['pages', ...COLLECTION_SLUGS],
     },
   ],
   labels: {

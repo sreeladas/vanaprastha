@@ -26,19 +26,17 @@ ARG NODE_ENV=development
 ENV NODE_ENV=$NODE_ENV
 
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/public ./public
 
 # Add local binaries to PATH
 ENV PATH=/app/node_modules/.bin:$PATH
 
 WORKDIR /app
 
-# Copy public + build output
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/static ./.next/static
-
 # Only copy standalone for production
-RUN if [ "$NODE_ENV" = "production" ] && [ -d /app/.next/standalone ]; then \
-      cp -r /app/.next/standalone ./; \
+RUN if [ "$NODE_ENV" = "production" ]; then \
+      mkdir -p .next && cp -r /app/.next/* .next/ && \
+      [ -d /app/.next/standalone ] && cp -r /app/.next/standalone ./ || true; \
     fi
 
 EXPOSE 3000

@@ -11,6 +11,11 @@ export const autoAssignToCollections: CollectionAfterChangeHook = async ({
     return doc
   }
 
+  // Prevent infinite loops - skip if this update was triggered by a hook
+  if (req.context?.skipHooks || req.context?.fromHook) {
+    return doc
+  }
+
   const currentCollections = doc.collections || []
   const previousCollections = previousDoc?.collections || []
 
@@ -94,6 +99,10 @@ export const autoAssignToCollections: CollectionAfterChangeHook = async ({
               data: {
                 galleryImages: updatedGallery,
               },
+              context: {
+                ...req.context,
+                fromHook: true,
+              },
             })
 
             req.payload.logger.info(`Added image ${doc.filename} to ${collectionSlug} collection`)
@@ -116,34 +125,38 @@ export const autoAssignToCollections: CollectionAfterChangeHook = async ({
         })
 
         if (collectionEntries.docs.length > 0) {
-        const collectionEntry = collectionEntries.docs[0]
-        const existingGallery = collectionEntry.galleryImages || []
+          const collectionEntry = collectionEntries.docs[0]
+          const existingGallery = collectionEntry.galleryImages || []
 
-        // Find the gallery item for this image and update it
-        const updatedGallery = existingGallery.map((item: any) => {
-          if (item.image === doc.id || item.image?.id === doc.id) {
-            return {
-              ...item,
-              caption: doc.alt || doc.filename || '',
-              description: extractCaptionText(doc.caption),
+          // Find the gallery item for this image and update it
+          const updatedGallery = existingGallery.map((item: any) => {
+            if (item.image === doc.id || item.image?.id === doc.id) {
+              return {
+                ...item,
+                caption: doc.alt || doc.filename || '',
+                description: extractCaptionText(doc.caption),
+              }
             }
-          }
-          return item
-        })
-
-        // Only update if something changed
-        const hasChanges = JSON.stringify(existingGallery) !== JSON.stringify(updatedGallery)
-        if (hasChanges) {
-          await payload.update({
-            collection: collectionSlug,
-            id: collectionEntry.id,
-            data: {
-              galleryImages: updatedGallery,
-            },
+            return item
           })
 
-          req.payload.logger.info(`Updated image ${doc.filename} in ${collectionSlug} collection`)
-        }
+          // Only update if something changed
+          const hasChanges = JSON.stringify(existingGallery) !== JSON.stringify(updatedGallery)
+          if (hasChanges) {
+            await payload.update({
+              collection: collectionSlug,
+              id: collectionEntry.id,
+              data: {
+                galleryImages: updatedGallery,
+              },
+              context: {
+                ...req.context,
+                fromHook: true,
+              },
+            })
+
+            req.payload.logger.info(`Updated image ${doc.filename} in ${collectionSlug} collection`)
+          }
         } else {
           req.payload.logger.warn(`Collection ${collectionSlug} not found for update`)
         }
@@ -178,9 +191,15 @@ export const autoAssignToCollections: CollectionAfterChangeHook = async ({
               data: {
                 galleryImages: updatedGallery,
               },
+              context: {
+                ...req.context,
+                fromHook: true,
+              },
             })
 
-            req.payload.logger.info(`Removed image ${doc.filename} from ${collectionSlug} collection`)
+            req.payload.logger.info(
+              `Removed image ${doc.filename} from ${collectionSlug} collection`,
+            )
           }
         } else {
           req.payload.logger.warn(`Collection ${collectionSlug} not found for removal`)

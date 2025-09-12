@@ -75,8 +75,8 @@ export const styles = {
     padding: '1.5rem',
     position: 'relative' as const,
     margin: 'auto',
-    transform: 'translateY(50%)',
-    top: '50%',
+    transform: 'translateY(10vh)',
+    top: '0',
   },
 
   closeButton: {

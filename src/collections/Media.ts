@@ -12,6 +12,7 @@ import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { autoAssignToCollections } from '../hooks/autoAssignToCollections'
 import { removeFromCollections } from '../hooks/removeFromCollections'
+import { AUTOMATED_COLLECTIONS } from '../config/collections'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -66,18 +67,10 @@ export const Media: CollectionConfig = {
       name: 'collections',
       type: 'select',
       hasMany: true,
-      options: [
-        { label: 'Bollywood Posters', value: 'bollywood-posters' },
-        { label: 'Butterflies', value: 'butterflies' },
-        { label: 'Dokra Metal Craft', value: 'dokra-metal-craft' },
-        { label: 'Fossils', value: 'fossils' },
-        { label: 'Masks', value: 'masks' },
-        { label: 'Nek Chand Works', value: 'nekchand-works' },
-        { label: 'Paintings', value: 'paintings' },
-        { label: 'Photography', value: 'photography' },
-        { label: 'Sea Shells', value: 'sea-shells' },
-        { label: 'Wooden Works', value: 'wooden-works' },
-      ],
+      options: AUTOMATED_COLLECTIONS.map((collection) => ({
+        label: collection.title,
+        value: collection.slug,
+      })),
       admin: {
         description: 'Tag this image with collections to automatically add it to those galleries',
       },

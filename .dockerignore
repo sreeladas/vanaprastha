@@ -1,0 +1,7 @@
+.next
+*.log
+dist
+docker-compose.yml
+Dockerfile
+node_modules
+public/media

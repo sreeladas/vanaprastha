@@ -1,34 +1,44 @@
-import { AutomatedCollections } from '@/payload-types'
-import type { PayloadRequest } from 'payload'
+import type { CollectionSlug, PayloadRequest } from 'payload'
+import { getCollectionSlugs, getCollectionTitles } from '@/config/collections'
 
-const collectionSlugs = [
-  'bollywood-posters',
-  'butterflies',
-  'dokra-metal-craft',
-  'fossils',
-  'masks',
-  'nekchand-works',
-  'paintings',
-  'photography',
-  'sea-shells',
-  'wooden-works',
-]
-
-const collectionTitles = {
-  'bollywood-posters': 'Bollywood Posters',
-  butterflies: 'Butterflies',
-  'dokra-metal-craft': 'Dokra Metal Craft',
-  fossils: 'Fossils',
-  masks: 'Masks',
-  'nekchand-works': 'Nek Chand Works',
-  paintings: 'Paintings',
-  photography: 'Photography',
-  'sea-shells': 'Sea Shells',
-  'wooden-works': 'Wooden Works',
-}
+const collectionSlugs = getCollectionSlugs()
+const collectionTitles = getCollectionTitles()
 
 export const ensureCollectionPages = async (req: PayloadRequest): Promise<void> => {
   const { payload } = req
+
+  let defaultHeroImageId: number | null = null
+  try {
+    const existingDefaultImage = await payload.find({
+      collection: 'media',
+      where: {
+        filename: {
+          equals: 'default-hero-image.png',
+        },
+      },
+      limit: 1,
+    })
+
+    if (existingDefaultImage.docs.length > 0) {
+      defaultHeroImageId = existingDefaultImage.docs[0].id
+    } else {
+      const defaultImage = await payload.create({
+        collection: 'media',
+        data: {
+          filename: 'default-hero-image.png',
+          alt: 'Default hero image for collections',
+          url: 'https://raw.githubusercontent.com/sreeladas/sreeladas.github.io/main/img/about-bg.png',
+          mimeType: 'image/png',
+        },
+      })
+      defaultHeroImageId = defaultImage.id
+    }
+  } catch (error) {
+    req.payload.logger.warn(
+      'Failed to create default hero image, proceeding without media in hero',
+      error,
+    )
+  }
 
   for (const collectionSlug of collectionSlugs) {
     try {
@@ -72,6 +82,9 @@ export const ensureCollectionPages = async (req: PayloadRequest): Promise<void> 
       if (existingPage.docs.length === 0) {
         await payload.create({
           collection: 'pages',
+          context: {
+            disableRevalidate: true,
+          },
           data: {
             title: collectionTitles[collectionSlug as keyof typeof collectionTitles],
             slug: collectionSlug,
@@ -127,7 +140,7 @@ export const ensureCollectionPages = async (req: PayloadRequest): Promise<void> 
                   version: 1,
                 },
               },
-              // media: placeholder image ID will be added when we have one
+              media: defaultHeroImageId,
             },
             layout: [
               {
@@ -164,7 +177,7 @@ export const ensureCollectionPages = async (req: PayloadRequest): Promise<void> 
                   },
                 },
                 populateBy: 'collection',
-                relationTo: collectionSlug as AutomatedCollections,
+                relationTo: collectionSlug as CollectionSlug,
                 categories: [],
               },
             ],
@@ -179,6 +192,7 @@ export const ensureCollectionPages = async (req: PayloadRequest): Promise<void> 
       }
     } catch (error) {
       req.payload.logger.error(`Failed to create page for ${collectionSlug}:`, error)
+      console.error(`Failed to create page for ${collectionSlug}:`, error)
     }
   }
 }

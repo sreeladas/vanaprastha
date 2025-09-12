@@ -2,24 +2,17 @@
 import React from 'react'
 import { Button } from '@payloadcms/ui'
 import { styles } from './styles'
+import { AUTOMATED_COLLECTIONS } from '@/config/collections'
 
 interface BulkCollectionSelectorProps {
   selectedCollections: string[]
   onChange: (collections: string[]) => void
 }
 
-const COLLECTION_OPTIONS = [
-  { label: 'Bollywood Posters', value: 'bollywood-posters' },
-  { label: 'Butterflies', value: 'butterflies' },
-  { label: 'Dokra Metal Craft', value: 'dokra-metal-craft' },
-  { label: 'Fossils', value: 'fossils' },
-  { label: 'Masks', value: 'masks' },
-  { label: 'Nekchand Works', value: 'nekchand-works' },
-  { label: 'Paintings', value: 'paintings' },
-  { label: 'Photography', value: 'photography' },
-  { label: 'Sea Shells', value: 'sea-shells' },
-  { label: 'Wooden Works', value: 'wooden-works' },
-]
+const COLLECTION_OPTIONS = AUTOMATED_COLLECTIONS.map((collection) => ({
+  label: collection.title,
+  value: collection.slug,
+}))
 
 export const BulkCollectionSelector: React.FC<BulkCollectionSelectorProps> = ({
   selectedCollections,

@@ -12,6 +12,7 @@ services:
       - .:/app
       - next_cache:/app/.next
       - node_modules:/app/node_modules
+      - ./public/media:/app/public/media
     depends_on:
       - db
     env_file:

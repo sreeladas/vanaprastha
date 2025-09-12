@@ -10,16 +10,7 @@ import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Users } from './collections/Users'
-import { BollywoodPosters } from './collections/BollywoodPosters'
-import { Butterflies } from './collections/Butterflies'
-import { DokraMetalCraft } from './collections/DokraMetalCraft'
-import { Fossils } from './collections/Fossils'
-import { Masks } from './collections/Masks'
-import { NekchandWorks } from './collections/NekchandWorks'
-import { Paintings } from './collections/Paintings'
-import { Photography } from './collections/Photography'
-import { SeaShells } from './collections/SeaShells'
-import { WoodenWorks } from './collections/WoodenWorks'
+import { getCollectionConfigs } from './config/collections'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { Homepage } from './globals/Homepage'
@@ -71,16 +62,7 @@ export default buildConfig({
   }),
   collections: [
     Pages,
-    BollywoodPosters,
-    Butterflies,
-    DokraMetalCraft,
-    Fossils,
-    Masks,
-    NekchandWorks,
-    Paintings,
-    Photography,
-    SeaShells,
-    WoodenWorks,
+    ...getCollectionConfigs(),
     Media,
     Categories,
     Users,

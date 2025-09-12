@@ -11,6 +11,11 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
     return doc
   }
 
+  // Prevent infinite loops - skip if this update was triggered by a hook
+  if (req.context?.skipHooks || req.context?.fromHook) {
+    return doc
+  }
+
   const { payload } = req
 
   try {
@@ -83,6 +88,10 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
                 data: {
                   collections: updatedCollections,
                 },
+                context: {
+                  ...req.context,
+                  fromHook: true,
+                },
               })
 
               req.payload.logger.info(`Added ${doc.slug} tag to manually added media ${imageId}`)
@@ -116,6 +125,10 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
               id: imageId,
               data: {
                 collections: updatedCollections,
+              },
+              context: {
+                ...req.context,
+                fromHook: true,
               },
             })
 
@@ -181,6 +194,10 @@ export const syncCollectionChanges: CollectionAfterChangeHook = async ({
                 collection: 'media',
                 id: imageId,
                 data: updateData,
+                context: {
+                  ...req.context,
+                  fromHook: true,
+                },
               })
 
               req.payload.logger.info(

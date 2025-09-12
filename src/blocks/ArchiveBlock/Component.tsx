@@ -4,6 +4,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
 import RichText from '@/components/RichText'
+import { getCollectionSlugs } from '@/config/collections'
 
 import { CollectionArchive } from '@/components/CollectionArchive'
 import { CollectionGalleryArchive } from '@/components/CollectionGalleryArchive'
@@ -65,18 +66,7 @@ export const ArchiveBlock: React.FC<
 
   // Check if we're displaying a custom collection (with galleryImages)
   const isCustomCollection = relationTo && relationTo !== 'pages'
-  const customCollectionSlugs = [
-    'bollywood-posters',
-    'butterflies',
-    'dokra-metal-craft',
-    'fossils',
-    'masks',
-    'nekchand-works',
-    'paintings',
-    'photography',
-    'sea-shells',
-    'wooden-works',
-  ]
+  const customCollectionSlugs = getCollectionSlugs()
 
   if (isCustomCollection && customCollectionSlugs.includes(relationTo) && pages.length > 0) {
     // For custom collections, display the gallery from the first (and only) collection entry

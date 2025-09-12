@@ -2,6 +2,7 @@ import { CollectionSlug, getPayload } from 'payload'
 import configPromise from '@payload-config'
 import React from 'react'
 import { Card, CardPageData } from '@/components/Card'
+import { getCollectionSlugs } from '@/config/collections'
 
 export default async function HomePage() {
   const payload = await getPayload({ config: configPromise })
@@ -11,18 +12,7 @@ export default async function HomePage() {
     slug: 'homepage',
   })
 
-  const collections = [
-    'nekchand-works',
-    'masks',
-    'wooden-works',
-    'bollywood-posters',
-    'paintings',
-    'photography',
-    'dokra-metal-craft',
-    'fossils',
-    'sea-shells',
-    'butterflies',
-  ] as CollectionSlug[]
+  const collections = getCollectionSlugs() as CollectionSlug[]
 
   const collectionData = await Promise.all(
     collections.map(async (collection) => {
