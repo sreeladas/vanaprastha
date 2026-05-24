@@ -11,7 +11,7 @@ export default function AboutPage() {
 
         <div className="space-y-6 font-sans text-warmgray-700 leading-relaxed">
           <p>
-            Surjit Das was a man of many dimensions — a dedicated civil servant, a thoughtful
+            Surjit Das was a man of many dimensions - a dedicated civil servant, a thoughtful
             scholar, a passionate cricket enthusiast, a connoisseur of culture, and above all, a
             deeply humane individual.
           </p>
@@ -33,13 +33,13 @@ export default function AboutPage() {
             development of key institutions across the state. His vision and dedication were
             instrumental in establishing and strengthening several significant initiatives, including
             the Civil Services Institute, the relocation and expansion of the Doon Library &amp;
-            Research Centre, and the upgradation of the Doon District Hospital into the Doon Medical
+            Research Centre, and the upgrade of the Doon District Hospital into the Doon Medical
             College &amp; Hospital.
           </p>
           <p>
             His legacy lives on through the institutions he helped shape and the countless lives he
             touched. Surjit Das remains an enduring symbol of thoughtful leadership, integrity, and
-            service — a true officer and a gentleman.
+            service - a true officer and a gentleman.
           </p>
         </div>
 
@@ -48,7 +48,7 @@ export default function AboutPage() {
         <div className="space-y-6 font-sans text-warmgray-700 leading-relaxed">
           <h2 className="text-2xl font-serif font-semibold text-warmgray-800">About Vanaprastha</h2>
           <p>
-            Vanaprastha was more than a residence; it was an extension of his mind and spirit —
+            Vanaprastha was more than a residence; it was an extension of his mind and spirit -
             quiet, reflective, and richly layered. Within its walls, he curated an extraordinary
             array of artifacts that spoke to his multifaceted interests. From rare tribal masks and
             cultural mascots to paintings, photographs, posters, coins, stamps, and archival
@@ -56,7 +56,7 @@ export default function AboutPage() {
             meaning.
           </p>
           <p>
-            This site is not merely a catalogue; it is a window into the world of S.K. Das. It
+            This site is not merely a catalogue; it is a window into the world of Surjit Das. It
             invites you to step into Vanaprastha, to walk among the objects he cherished, and to
             experience the legacy of a man who saw beauty in detail and history in everything.
           </p>

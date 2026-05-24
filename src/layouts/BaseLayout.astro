@@ -7,10 +7,10 @@ interface Props {
 }
 
 const {
-  title = 'The Collection of Surjit Das at Vanaprastha',
-  description = 'A curated collection of art, artifacts, and cultural heritage lovingly preserved by Late S.K. Das.',
+  title = 'The Collections of Surjit Das at Vanaprastha',
+  description = 'A curated collection of art, artifacts, and cultural heritage preserved by Surjit Das at Vanaprastha.',
 } = Astro.props;
-const fullTitle = title === 'The Collection of Surjit Das at Vanaprastha' ? title : `${title} — Vanaprastha`;
+const fullTitle = title === 'The Collections of Surjit Das at Vanaprastha' ? title : `${title} - Vanaprastha`;
 ---
 
 <!doctype html>
@@ -23,6 +23,8 @@ const fullTitle = title === 'The Collection of Surjit Das at Vanaprastha' ? titl
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body>
+    <img src="/pillar-left.png" alt="" aria-hidden="true" class="pillar-border pillar-left" />
+    <img src="/pillar-right.png" alt="" aria-hidden="true" class="pillar-border pillar-right" />
     <slot />
   </body>
 </html>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @theme {
   --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
@@ -15,4 +16,59 @@
   --color-warmgray-700: #5e554a;
   --color-warmgray-800: #4a4339;
   --color-warmgray-900: #3a342c;
+
+  --color-background: #faf7f2;
+  --color-foreground: #3a342c;
+  --color-card: #fdfcfa;
+  --color-card-foreground: #3a342c;
+  --color-primary: #4a4339;
+  --color-primary-foreground: #faf7f2;
+  --color-secondary: #f0eeeb;
+  --color-secondary-foreground: #4a4339;
+  --color-muted: #f0eeeb;
+  --color-muted-foreground: #8f8577;
+  --color-accent: #f0eeeb;
+  --color-accent-foreground: #4a4339;
+  --color-destructive: #dc2626;
+  --color-border: #f0eeeb;
+  --color-input: #e0dcd6;
+  --color-ring: #a89f93;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #3a342c;
+
+  --radius: 0.5rem;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before {
+    border-color: var(--color-border);
+  }
+
+  .pillar-border {
+    display: none;
+    position: fixed;
+    top: 0;
+    height: 100vh;
+    width: auto;
+    z-index: 40;
+    pointer-events: none;
+    object-fit: cover;
+    opacity: 0.85;
+  }
+
+  .pillar-left {
+    left: 0;
+  }
+
+  .pillar-right {
+    right: 0;
+  }
+
+  @media (min-width: 1280px) {
+    .pillar-border {
+      display: block;
+    }
+  }
 }

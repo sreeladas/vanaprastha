@@ -1,4 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, GripVertical, RotateCw, Trash2, Plus, Shuffle, ChevronLeft, ChevronRight, Crosshair } from 'lucide-react';
 import SiteHeader from './SiteHeader';
 import SiteFooter from './SiteFooter';
 
@@ -23,6 +29,7 @@ interface CollectionFull {
   title: string;
   order: number;
   heroImage?: string;
+  heroFocus?: string;
   pdfPage?: number;
   items: Item[];
   body: string;
@@ -51,7 +58,6 @@ export default function AdminEditor() {
 
   useEffect(() => { loadCollections(); }, [loadCollections]);
 
-  // Restore edit state from hash on mount (survives HMR reloads)
   useEffect(() => {
     const hash = window.location.hash;
     const match = hash.match(/^#edit\/(.+)$/);
@@ -92,6 +98,7 @@ export default function AdminEditor() {
         title: editing.title,
         order: editing.order,
         heroImage: editing.heroImage,
+        heroFocus: editing.heroFocus,
         items: editing.items,
         blurb: editing.body,
       }),
@@ -149,15 +156,31 @@ export default function AdminEditor() {
     updateEditing({ items: editing.items.filter((_, i) => i !== index) });
   }
 
-  function moveItem(index: number, direction: -1 | 1) {
+  function reorderItem(from: number, to: number) {
     if (!editing) return;
     const items = [...editing.items];
-    const target = index + direction;
-    if (target < 0 || target >= items.length) return;
-    [items[index], items[target]] = [items[target], items[index]];
-    if (focusedIndex === index) setFocusedIndex(target);
-    else if (focusedIndex === target) setFocusedIndex(index);
+    const [moved] = items.splice(from, 1);
+    items.splice(to, 0, moved);
+    if (focusedIndex === from) setFocusedIndex(to);
+    else if (focusedIndex !== null) {
+      if (from < focusedIndex && to >= focusedIndex) setFocusedIndex(focusedIndex - 1);
+      else if (from > focusedIndex && to <= focusedIndex) setFocusedIndex(focusedIndex + 1);
+    }
     updateEditing({ items });
+  }
+
+  async function reorderCollections(from: number, to: number) {
+    const reordered = [...collections];
+    const [moved] = reordered.splice(from, 1);
+    reordered.splice(to, 0, moved);
+    setCollections(reordered);
+    await Promise.all(reordered.map((c, i) =>
+      fetch(`/api/collections/${c.slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: i + 1 }),
+      })
+    ));
   }
 
   async function rotateImage(index: number, degrees: 90 | 180 | 270 = 90) {
@@ -241,38 +264,43 @@ export default function AdminEditor() {
   const otherCollections = collections.filter((c) => c.slug !== editing?.slug);
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream text-warmgray-900">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SiteHeader />
       <main className="flex-1 max-w-6xl mx-auto px-6 py-10 w-full font-sans">
         {status && (
-          <div className="mb-4 px-4 py-2 bg-green-50 text-green-800 rounded text-sm border border-green-200">
+          <div className="mb-4 px-4 py-2 bg-green-50 text-green-800 rounded-md text-sm border border-green-200">
             {status}
           </div>
         )}
 
-        {view === 'list' && <CollectionList
-          collections={collections}
-          onEdit={openEditor}
-          onDelete={deleteCollection}
-          onCreate={() => setView('create')}
-        />}
+        {view === 'list' && (
+          <CollectionList
+            collections={collections}
+            onEdit={openEditor}
+            onDelete={deleteCollection}
+            onCreate={() => setView('create')}
+            onReorder={reorderCollections}
+          />
+        )}
 
-        {view === 'create' && <CreateForm
-          slug={newSlug} title={newTitle}
-          onSlugChange={setNewSlug} onTitleChange={setNewTitle}
-          onCreate={createCollection} onCancel={() => setView('list')}
-        />}
+        {view === 'create' && (
+          <CreateForm
+            slug={newSlug} title={newTitle}
+            onSlugChange={setNewSlug} onTitleChange={setNewTitle}
+            onCreate={createCollection} onCancel={() => setView('list')}
+          />
+        )}
 
         {view === 'edit' && editing && (
           <>
             <div className="flex items-center gap-4 mb-6">
-              <button onClick={closeEditor}
-                className="text-warmgray-500 hover:text-warmgray-700 cursor-pointer">&larr; Back</button>
+              <Button variant="ghost" size="sm" onClick={closeEditor}>
+                <ArrowLeft className="size-4" /> Back
+              </Button>
               <h1 className="text-2xl font-serif font-bold flex-1">{editing.title}</h1>
-              <button onClick={saveCollection} disabled={busy}
-                className="px-4 py-2 bg-warmgray-800 text-white text-sm rounded hover:bg-warmgray-700 disabled:opacity-50 cursor-pointer">
+              <Button onClick={saveCollection} disabled={busy}>
                 {busy ? 'Saving...' : 'Save'}
-              </button>
+              </Button>
             </div>
 
             {focusedIndex !== null && editing.items[focusedIndex] ? (
@@ -302,7 +330,7 @@ export default function AdminEditor() {
                   onClickImage={setFocusedIndex}
                   onUpdateItem={updateItem}
                   onRemoveItem={removeItem}
-                  onMoveItem={moveItem}
+                  onReorder={reorderItem}
                   onRotate={rotateImage}
                   onMoveToCollection={moveToCollection}
                   onAddUrl={addImageFromUrl}
@@ -313,10 +341,9 @@ export default function AdminEditor() {
                 />
 
                 <div className="flex justify-end mt-6">
-                  <button onClick={() => deleteCollection(editing.slug)}
-                    className="px-4 py-2 text-sm text-red-600 hover:text-red-800 cursor-pointer">
-                    Delete Collection
-                  </button>
+                  <Button variant="destructive" size="sm" onClick={() => deleteCollection(editing.slug)}>
+                    <Trash2 className="size-4" /> Delete Collection
+                  </Button>
                 </div>
               </>
             )}
@@ -327,8 +354,6 @@ export default function AdminEditor() {
     </div>
   );
 }
-
-// --- Sub-components ---
 
 function ImageDetail({ item, index, total, src, otherCollections, onUpdate, onRotate, onRemove, onMove, onNavigate, onClose, busy }: {
   item: Item; index: number; total: number; src: string;
@@ -344,63 +369,74 @@ function ImageDetail({ item, index, total, src, otherCollections, onUpdate, onRo
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <button onClick={onClose} className="text-warmgray-500 hover:text-warmgray-700 cursor-pointer text-sm">&larr; Back to list</button>
-        <span className="text-xs text-warmgray-400 ml-auto">{index + 1} / {total}</span>
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          <ArrowLeft className="size-4" /> Back to list
+        </Button>
+        <Badge variant="secondary" className="ml-auto">{index + 1} / {total}</Badge>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-        <div className="bg-warmgray-100 rounded-lg overflow-hidden flex items-center justify-center min-h-[400px]">
+        <div className="bg-muted rounded-lg overflow-hidden flex items-center justify-center min-h-[400px]">
           <img src={src} alt={item.title || ''} className="max-w-full max-h-[70vh] object-contain" />
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs text-warmgray-500 mb-1">Title</label>
-            <input value={item.title || ''} onChange={(e) => onUpdate({ title: e.target.value })}
-              className="w-full border border-warmgray-300 rounded px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-xs text-warmgray-500 mb-1">Caption</label>
-            <textarea value={item.caption || ''} onChange={(e) => onUpdate({ caption: e.target.value })}
-              rows={4} className="w-full border border-warmgray-300 rounded px-3 py-2 text-sm resize-y" />
-          </div>
-          <div className="text-[11px] text-warmgray-400 font-mono break-all">
-            {item.url ? item.url : item.filename}
-          </div>
-
-          <div className="flex flex-wrap gap-2 pt-2">
-            {item.filename && (
-              <>
-                <button onClick={() => onRotate(90)} disabled={busy}
-                  className="px-3 py-1.5 text-xs bg-warmgray-100 rounded hover:bg-warmgray-200 disabled:opacity-50 cursor-pointer">Rotate 90°</button>
-                <button onClick={() => onRotate(180)} disabled={busy}
-                  className="px-3 py-1.5 text-xs bg-warmgray-100 rounded hover:bg-warmgray-200 disabled:opacity-50 cursor-pointer">Rotate 180°</button>
-                <button onClick={() => onRotate(270)} disabled={busy}
-                  className="px-3 py-1.5 text-xs bg-warmgray-100 rounded hover:bg-warmgray-200 disabled:opacity-50 cursor-pointer">Rotate 270°</button>
-              </>
-            )}
-            <button onClick={onRemove}
-              className="px-3 py-1.5 text-xs text-red-600 bg-red-50 rounded hover:bg-red-100 cursor-pointer">Remove</button>
-          </div>
-
-          {otherCollections.length > 0 && (
-            <div className="pt-2">
-              <label className="block text-xs text-warmgray-500 mb-1">Move to collection</label>
-              <select onChange={(e) => { if (e.target.value) { onMove(e.target.value); e.target.value = ''; } }}
-                defaultValue="" className="w-full border border-warmgray-300 rounded px-3 py-2 text-sm">
-                <option value="" disabled>Select collection...</option>
-                {otherCollections.map((c) => <option key={c.slug} value={c.slug}>{c.title}</option>)}
-              </select>
+        <Card>
+          <CardContent className="space-y-4 pt-6">
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Title</label>
+              <Input value={item.title || ''} onChange={(e) => onUpdate({ title: e.target.value })} />
             </div>
-          )}
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Caption</label>
+              <Textarea value={item.caption || ''} onChange={(e) => onUpdate({ caption: e.target.value })} rows={4} />
+            </div>
+            <div className="text-[11px] text-muted-foreground font-mono break-all">
+              {item.url ? item.url : item.filename}
+            </div>
 
-          <div className="flex gap-2 pt-4 border-t border-warmgray-200">
-            <button onClick={() => onNavigate(index - 1)} disabled={index === 0}
-              className="flex-1 py-2 text-sm bg-warmgray-100 rounded hover:bg-warmgray-200 disabled:opacity-30 cursor-pointer">&larr; Prev</button>
-            <button onClick={() => onNavigate(index + 1)} disabled={index === total - 1}
-              className="flex-1 py-2 text-sm bg-warmgray-100 rounded hover:bg-warmgray-200 disabled:opacity-30 cursor-pointer">Next &rarr;</button>
-          </div>
-        </div>
+            <div className="flex flex-wrap gap-2 pt-2">
+              {item.filename && (
+                <>
+                  <Button variant="secondary" size="xs" onClick={() => onRotate(90)} disabled={busy}>
+                    <RotateCw className="size-3" /> 90
+                  </Button>
+                  <Button variant="secondary" size="xs" onClick={() => onRotate(180)} disabled={busy}>
+                    <RotateCw className="size-3" /> 180
+                  </Button>
+                  <Button variant="secondary" size="xs" onClick={() => onRotate(270)} disabled={busy}>
+                    <RotateCw className="size-3" /> 270
+                  </Button>
+                </>
+              )}
+              <Button variant="destructive" size="xs" onClick={onRemove}>
+                <Trash2 className="size-3" /> Remove
+              </Button>
+            </div>
+
+            {otherCollections.length > 0 && (
+              <div className="pt-2">
+                <label className="block text-xs text-muted-foreground mb-1">Move to collection</label>
+                <select
+                  onChange={(e) => { if (e.target.value) { onMove(e.target.value); e.target.value = ''; } }}
+                  defaultValue=""
+                  className="w-full border border-input rounded-md px-3 py-2 text-sm bg-transparent"
+                >
+                  <option value="" disabled>Select collection...</option>
+                  {otherCollections.map((c) => <option key={c.slug} value={c.slug}>{c.title}</option>)}
+                </select>
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-4 border-t border-border">
+              <Button variant="outline" className="flex-1" onClick={() => onNavigate(index - 1)} disabled={index === 0}>
+                <ChevronLeft className="size-4" /> Prev
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => onNavigate(index + 1)} disabled={index === total - 1}>
+                Next <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -410,39 +446,82 @@ function CollectionDetails({ collection, onUpdate }: {
   collection: CollectionFull;
   onUpdate: (patch: Partial<CollectionFull>) => void;
 }) {
+  const heroSrc = collection.heroImage
+    ? `/images/collections/${collection.slug}/${collection.heroImage}`
+    : null;
+
+  const [fx, fy] = (collection.heroFocus || '50% 50%').split(' ').map((v) => parseInt(v));
+
+  function handleFocusClick(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+    onUpdate({ heroFocus: `${x}% ${y}%` });
+  }
+
   return (
     <div className="space-y-6 mb-6">
-      <section className="bg-white rounded-lg border border-warmgray-200 p-6 space-y-4">
-        <h2 className="font-semibold text-warmgray-800">Details</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs text-warmgray-500 mb-1">Title</label>
-            <input value={collection.title} onChange={(e) => onUpdate({ title: e.target.value })}
-              className="w-full border border-warmgray-300 rounded px-3 py-2 text-sm" />
+      <Card>
+        <CardHeader>
+          <CardTitle>Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Title</label>
+              <Input value={collection.title} onChange={(e) => onUpdate({ title: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Order</label>
+              <Input type="number" value={collection.order} onChange={(e) => onUpdate({ order: Number(e.target.value) })} />
+            </div>
           </div>
           <div>
-            <label className="block text-xs text-warmgray-500 mb-1">Order</label>
-            <input type="number" value={collection.order} onChange={(e) => onUpdate({ order: Number(e.target.value) })}
-              className="w-full border border-warmgray-300 rounded px-3 py-2 text-sm" />
+            <label className="block text-xs text-muted-foreground mb-1">Hero Image</label>
+            <Input value={collection.heroImage || ''} onChange={(e) => onUpdate({ heroImage: e.target.value || undefined })} className="font-mono" />
           </div>
-        </div>
-        <div>
-          <label className="block text-xs text-warmgray-500 mb-1">Hero Image</label>
-          <input value={collection.heroImage || ''} onChange={(e) => onUpdate({ heroImage: e.target.value || undefined })}
-            className="w-full border border-warmgray-300 rounded px-3 py-2 text-sm font-mono" />
-        </div>
-      </section>
+          {heroSrc && (
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">
+                <Crosshair className="size-3 inline mr-1" />
+                Focal point (click to set)
+              </label>
+              <div
+                className="relative h-48 rounded-lg overflow-hidden cursor-crosshair border border-input"
+                onClick={handleFocusClick}
+              >
+                <img
+                  src={heroSrc}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  style={{ objectPosition: collection.heroFocus || '50% 50%' }}
+                />
+                <div
+                  className="absolute w-6 h-6 -ml-3 -mt-3 rounded-full border-2 border-white shadow-md bg-white/30 pointer-events-none"
+                  style={{ left: `${fx}%`, top: `${fy}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Current: {collection.heroFocus || '50% 50%'}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      <section className="bg-white rounded-lg border border-warmgray-200 p-6">
-        <h2 className="font-semibold text-warmgray-800 mb-3">Description</h2>
-        <textarea value={collection.body} onChange={(e) => onUpdate({ body: e.target.value })}
-          rows={6} className="w-full border border-warmgray-300 rounded px-3 py-2 text-sm leading-relaxed resize-y" />
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Description</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea value={collection.body} onChange={(e) => onUpdate({ body: e.target.value })} rows={6} className="leading-relaxed" />
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-function ImageList({ collection, thumbSize, otherCollections, onThumbSizeChange, onClickImage, onUpdateItem, onRemoveItem, onMoveItem, onRotate, onMoveToCollection, onAddUrl, onAddLocal, onSortSimilar, imgSrc, busy }: {
+function ImageList({ collection, thumbSize, otherCollections, onThumbSizeChange, onClickImage, onUpdateItem, onRemoveItem, onReorder, onRotate, onMoveToCollection, onAddUrl, onAddLocal, onSortSimilar, imgSrc, busy }: {
   collection: CollectionFull;
   thumbSize: ThumbSize;
   otherCollections: CollectionSummary[];
@@ -450,7 +529,7 @@ function ImageList({ collection, thumbSize, otherCollections, onThumbSizeChange,
   onClickImage: (i: number) => void;
   onUpdateItem: (i: number, patch: Partial<Item>) => void;
   onRemoveItem: (i: number) => void;
-  onMoveItem: (i: number, dir: -1 | 1) => void;
+  onReorder: (from: number, to: number) => void;
   onRotate: (i: number, deg?: 90 | 180 | 270) => void;
   onMoveToCollection: (i: number, to: string) => void;
   onAddUrl: () => void;
@@ -460,120 +539,199 @@ function ImageList({ collection, thumbSize, otherCollections, onThumbSizeChange,
   busy: boolean;
 }) {
   const px = THUMB_PX[thumbSize];
+  const dragItem = useRef<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+
+  function handleDragStart(i: number) {
+    dragItem.current = i;
+  }
+
+  function handleDragOver(e: React.DragEvent, i: number) {
+    e.preventDefault();
+    setDragOver(i);
+  }
+
+  function handleDrop(i: number) {
+    if (dragItem.current !== null && dragItem.current !== i) {
+      onReorder(dragItem.current, i);
+    }
+    dragItem.current = null;
+    setDragOver(null);
+  }
+
+  function handleDragEnd() {
+    dragItem.current = null;
+    setDragOver(null);
+  }
 
   return (
-    <section className="bg-white rounded-lg border border-warmgray-200 p-6">
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h2 className="font-semibold text-warmgray-800">Images ({collection.items.length})</h2>
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex border border-warmgray-300 rounded overflow-hidden text-xs">
-            {(['sm', 'md', 'lg'] as ThumbSize[]).map((s) => (
-              <button key={s} onClick={() => onThumbSizeChange(s)}
-                className={`px-2 py-1 cursor-pointer ${thumbSize === s ? 'bg-warmgray-800 text-white' : 'bg-white hover:bg-warmgray-100'}`}>
-                {s === 'sm' ? 'S' : s === 'md' ? 'M' : 'L'}
-              </button>
-            ))}
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <CardTitle>Images ({collection.items.length})</CardTitle>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex border border-input rounded-md overflow-hidden text-xs">
+              {(['sm', 'md', 'lg'] as ThumbSize[]).map((s) => (
+                <button key={s} onClick={() => onThumbSizeChange(s)}
+                  className={`px-2.5 py-1 cursor-pointer transition-colors ${thumbSize === s ? 'bg-primary text-primary-foreground' : 'bg-transparent hover:bg-accent'}`}>
+                  {s === 'sm' ? 'S' : s === 'md' ? 'M' : 'L'}
+                </button>
+              ))}
+            </div>
+            <Button variant="secondary" size="sm" onClick={onSortSimilar} disabled={busy}>
+              <Shuffle className="size-3.5" /> Sort similar
+            </Button>
+            <Button variant="outline" size="sm" onClick={onAddUrl}>
+              <Plus className="size-3.5" /> URL
+            </Button>
+            <Button variant="outline" size="sm" onClick={onAddLocal}>
+              <Plus className="size-3.5" /> File
+            </Button>
           </div>
-          <button onClick={onSortSimilar} disabled={busy}
-            className="px-3 py-1.5 text-xs bg-warmgray-100 rounded hover:bg-warmgray-200 disabled:opacity-50 cursor-pointer">
-            Sort by similarity
-          </button>
-          <button onClick={onAddUrl} className="px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 cursor-pointer">
-            + From URL
-          </button>
-          <button onClick={onAddLocal} className="px-3 py-1.5 text-xs bg-warmgray-100 rounded hover:bg-warmgray-200 cursor-pointer">
-            + Local File
-          </button>
         </div>
-      </div>
+      </CardHeader>
+      <CardContent>
+        {collection.items.length === 0 && (
+          <p className="text-sm text-muted-foreground py-4 text-center">No images yet.</p>
+        )}
 
-      {collection.items.length === 0 && (
-        <p className="text-sm text-warmgray-400 py-4 text-center">No images yet.</p>
-      )}
-
-      <div className="space-y-2">
-        {collection.items.map((item, i) => (
-          <div key={i} className="flex items-start gap-3 p-3 rounded border border-warmgray-100 bg-warmgray-50/50">
-            {/* Thumbnail with overlaid actions */}
-            <div className="relative shrink-0 group" style={{ width: px, height: px }}>
-              <button onClick={() => onClickImage(i)}
-                className="w-full h-full rounded bg-warmgray-200 overflow-hidden cursor-pointer border-0 p-0 block">
-                {(item.url || item.filename) && (
-                  <img src={imgSrc(item)} alt="" className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                )}
-              </button>
-              <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                {item.filename && (
-                  <button onClick={() => onRotate(i)} disabled={busy} title="Rotate 90°"
-                    className="w-6 h-6 text-xs bg-white/90 rounded shadow hover:bg-white cursor-pointer disabled:opacity-50 flex items-center justify-center">&#x21bb;</button>
-                )}
-                <button onClick={() => onRemoveItem(i)} title="Remove"
-                  className="w-6 h-6 text-xs text-red-600 bg-white/90 rounded shadow hover:bg-white cursor-pointer flex items-center justify-center">&times;</button>
+        <div className="space-y-2">
+          {collection.items.map((item, i) => (
+            <div
+              key={i}
+              draggable
+              onDragStart={() => handleDragStart(i)}
+              onDragOver={(e) => handleDragOver(e, i)}
+              onDrop={() => handleDrop(i)}
+              onDragEnd={handleDragEnd}
+              className={`flex items-start gap-3 p-3 rounded-md border border-border bg-muted/30 transition-opacity ${dragOver === i ? 'border-primary/50 bg-accent/50' : ''} ${dragItem.current === i ? 'opacity-50' : ''}`}
+            >
+              <div className="flex items-center self-stretch cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground pr-1">
+                <GripVertical className="size-4" />
               </div>
-              <div className="absolute bottom-1 left-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => onMoveItem(i, -1)} disabled={i === 0} title="Move up"
-                  className="w-6 h-6 text-xs bg-white/90 rounded shadow hover:bg-white cursor-pointer disabled:opacity-30 flex items-center justify-center">&uarr;</button>
-                <button onClick={() => onMoveItem(i, 1)} disabled={i === collection.items.length - 1} title="Move down"
-                  className="w-6 h-6 text-xs bg-white/90 rounded shadow hover:bg-white cursor-pointer disabled:opacity-30 flex items-center justify-center">&darr;</button>
+
+              <div className="relative shrink-0 group" style={{ width: px, height: px }}>
+                <button onClick={() => onClickImage(i)}
+                  className="w-full h-full rounded-md bg-muted overflow-hidden cursor-pointer border-0 p-0 block">
+                  {(item.url || item.filename) && (
+                    <img src={imgSrc(item)} alt="" className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  )}
+                </button>
+                <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {item.filename && (
+                    <>
+                      <Button variant="secondary" size="icon-xs" onClick={() => onRotate(i, 270)} disabled={busy} title="Rotate counter-clockwise">
+                        <RotateCw className="size-3 -scale-x-100" />
+                      </Button>
+                      <Button variant="secondary" size="icon-xs" onClick={() => onRotate(i, 90)} disabled={busy} title="Rotate clockwise">
+                        <RotateCw className="size-3" />
+                      </Button>
+                    </>
+                  )}
+                  <Button variant="destructive" size="icon-xs" onClick={() => onRemoveItem(i)} title="Remove">
+                    <Trash2 className="size-3" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <Input value={item.title || ''} onChange={(e) => onUpdateItem(i, { title: e.target.value })} placeholder="Title" className="h-8 text-sm" />
+                <Textarea value={item.caption || ''} onChange={(e) => onUpdateItem(i, { caption: e.target.value })} placeholder="Caption" rows={2} className="text-xs leading-relaxed resize-y" />
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground font-mono truncate flex-1">
+                    {item.url ? `URL: ${item.url}` : item.filename}
+                  </span>
+                  {otherCollections.length > 0 && (
+                    <select
+                      onChange={(e) => { if (e.target.value) { onMoveToCollection(i, e.target.value); e.target.value = ''; } }}
+                      defaultValue=""
+                      className="border border-input rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground max-w-[140px] bg-transparent"
+                    >
+                      <option value="" disabled>Move to...</option>
+                      {otherCollections.map((c) => <option key={c.slug} value={c.slug}>{c.title}</option>)}
+                    </select>
+                  )}
+                </div>
               </div>
             </div>
-
-            {/* Inline editing fields */}
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <input value={item.title || ''} onChange={(e) => onUpdateItem(i, { title: e.target.value })}
-                placeholder="Title" className="w-full border border-warmgray-200 rounded px-2 py-1 text-sm" />
-              <textarea value={item.caption || ''} onChange={(e) => onUpdateItem(i, { caption: e.target.value })}
-                placeholder="Caption" rows={2}
-                className="w-full border border-warmgray-200 rounded px-2 py-1 text-xs resize-y leading-relaxed" />
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-warmgray-400 font-mono truncate flex-1">
-                  {item.url ? `URL: ${item.url}` : item.filename}
-                </span>
-                {otherCollections.length > 0 && (
-                  <select onChange={(e) => { if (e.target.value) { onMoveToCollection(i, e.target.value); e.target.value = ''; } }}
-                    defaultValue="" className="border border-warmgray-200 rounded px-1.5 py-0.5 text-[10px] text-warmgray-500 max-w-[140px]">
-                    <option value="" disabled>Move to...</option>
-                    {otherCollections.map((c) => <option key={c.slug} value={c.slug}>{c.title}</option>)}
-                  </select>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
-function CollectionList({ collections, onEdit, onDelete, onCreate }: {
+function CollectionList({ collections, onEdit, onDelete, onCreate, onReorder }: {
   collections: CollectionSummary[];
   onEdit: (slug: string) => void;
   onDelete: (slug: string) => void;
   onCreate: () => void;
+  onReorder: (from: number, to: number) => void;
 }) {
+  const dragItem = useRef<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+
+  function handleDragStart(i: number) {
+    dragItem.current = i;
+  }
+
+  function handleDragOver(e: React.DragEvent, i: number) {
+    e.preventDefault();
+    setDragOver(i);
+  }
+
+  function handleDrop(i: number) {
+    if (dragItem.current !== null && dragItem.current !== i) {
+      onReorder(dragItem.current, i);
+    }
+    dragItem.current = null;
+    setDragOver(null);
+  }
+
+  function handleDragEnd() {
+    dragItem.current = null;
+    setDragOver(null);
+  }
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-serif font-bold">Collections</h1>
-        <button onClick={onCreate} className="px-4 py-2 bg-warmgray-800 text-white text-sm rounded hover:bg-warmgray-700 cursor-pointer">
-          + New Collection
-        </button>
+        <Button onClick={onCreate}>
+          <Plus className="size-4" /> New Collection
+        </Button>
       </div>
       <div className="space-y-3">
-        {collections.map((c) => (
-          <div key={c.slug} className="flex items-center justify-between bg-white rounded-lg border border-warmgray-200 px-5 py-4">
+        {collections.map((c, i) => (
+          <Card
+            key={c.slug}
+            onDragOver={(e) => handleDragOver(e, i)}
+            onDrop={() => handleDrop(i)}
+            onDragEnd={handleDragEnd}
+            className={`flex-row items-center px-5 py-4 cursor-pointer hover:bg-accent/50 transition-colors ${dragOver === i ? 'border-primary/50 bg-accent/50' : ''}`}
+            onClick={() => onEdit(c.slug)}
+          >
+            <div
+              draggable
+              onDragStart={() => handleDragStart(i)}
+              className="flex items-center self-stretch cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground pr-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GripVertical className="size-4" />
+            </div>
             <div className="min-w-0 flex-1">
-              <div className="font-semibold text-warmgray-800">{c.title}</div>
-              <div className="text-xs text-warmgray-500 mt-1">
-                {c.slug} &middot; {c.itemCount} images &middot; order {c.order}
+              <div className="font-semibold">{c.title}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {c.slug} &middot; {c.itemCount} images
               </div>
             </div>
             <div className="flex gap-2 ml-4 shrink-0">
-              <button onClick={() => onEdit(c.slug)} className="px-3 py-1.5 text-sm bg-warmgray-100 rounded hover:bg-warmgray-200 cursor-pointer">Edit</button>
-              <button onClick={() => onDelete(c.slug)} className="px-3 py-1.5 text-sm text-red-600 bg-red-50 rounded hover:bg-red-100 cursor-pointer">Delete</button>
+              <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); onDelete(c.slug); }}>
+                <Trash2 className="size-3.5" />
+              </Button>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </>
@@ -588,22 +746,22 @@ function CreateForm({ slug, title, onSlugChange, onTitleChange, onCreate, onCanc
   return (
     <>
       <h1 className="text-2xl font-serif font-bold mb-6">New Collection</h1>
-      <div className="bg-white rounded-lg border border-warmgray-200 p-6 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-warmgray-700 mb-1">Title</label>
-          <input value={title} onChange={(e) => onTitleChange(e.target.value)}
-            className="w-full border border-warmgray-300 rounded px-3 py-2 text-sm" placeholder="Paintings" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-warmgray-700 mb-1">Slug</label>
-          <input value={slug} onChange={(e) => onSlugChange(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-            className="w-full border border-warmgray-300 rounded px-3 py-2 text-sm font-mono" placeholder="paintings" />
-        </div>
-        <div className="flex gap-3">
-          <button onClick={onCreate} className="px-4 py-2 bg-warmgray-800 text-white text-sm rounded hover:bg-warmgray-700 cursor-pointer">Create</button>
-          <button onClick={onCancel} className="px-4 py-2 text-sm text-warmgray-600 hover:text-warmgray-800 cursor-pointer">Cancel</button>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="space-y-4 pt-6">
+          <div>
+            <label className="block text-sm font-medium mb-1">Title</label>
+            <Input value={title} onChange={(e) => onTitleChange(e.target.value)} placeholder="Paintings" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Slug</label>
+            <Input value={slug} onChange={(e) => onSlugChange(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))} placeholder="paintings" className="font-mono" />
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={onCreate}>Create</Button>
+            <Button variant="ghost" onClick={onCancel}>Cancel</Button>
+          </div>
+        </CardContent>
+      </Card>
     </>
   );
 }

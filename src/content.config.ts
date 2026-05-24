@@ -7,6 +7,7 @@ const collectionsSchema = defineCollection({
     title: z.string(),
     order: z.number(),
     heroImage: z.string().optional(),
+    heroFocus: z.string().optional(),
     pdfPage: z.number().optional(),
     items: z
       .array(

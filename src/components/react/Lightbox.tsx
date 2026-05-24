@@ -31,51 +31,52 @@ export default function Lightbox({ images, currentIndex, onClose, onNavigate }: 
   }, [handleKeyDown]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onClick={onClose}>
-      <div className="relative max-w-5xl max-h-[90vh] w-full mx-4" onClick={(e) => e.stopPropagation()}>
-        <button
-          onClick={onClose}
-          className="absolute -top-12 right-0 text-white/70 hover:text-white text-3xl font-sans cursor-pointer"
-          aria-label="Close"
-        >
-          ✕
-        </button>
+    <div className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center" onClick={onClose}>
+      <div className="relative aspect-[2/3] max-h-[85vh] max-w-[90vw] bg-white rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={onClose}
+            className="absolute -top-3 -right-3 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-warmgray-800 text-white hover:bg-warmgray-700 text-2xl font-sans cursor-pointer transition-colors shadow-lg"
+            aria-label="Close"
+          >
+            ✕
+          </button>
 
-        <img
-          src={image.src}
-          alt={image.title || ''}
-          className="max-h-[80vh] w-auto mx-auto object-contain"
-        />
-
-        {(image.title || image.caption) && (
-          <div className="text-center mt-4 px-4">
-            {image.title && <p className="text-white font-serif text-lg">{image.title}</p>}
-            {image.caption && <p className="text-white/70 font-sans text-sm mt-1">{image.caption}</p>}
+          <div className="flex-1 min-h-0 flex items-center justify-center">
+            <img
+              src={image.src}
+              alt={image.title || ''}
+              className="max-h-full max-w-full object-contain rounded-lg"
+            />
           </div>
-        )}
 
-        {hasPrev && (
-          <button
-            onClick={() => onNavigate(currentIndex - 1)}
-            className="absolute left-2 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-4xl font-sans cursor-pointer px-2"
-            aria-label="Previous"
-          >
-            ‹
-          </button>
-        )}
-        {hasNext && (
-          <button
-            onClick={() => onNavigate(currentIndex + 1)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-4xl font-sans cursor-pointer px-2"
-            aria-label="Next"
-          >
-            ›
-          </button>
-        )}
+          <div className="shrink-0 mt-4 pt-3 border-t border-warmgray-100 flex items-center justify-between gap-4">
+            <div className="flex-1 text-center">
+              {image.title && <p className="text-warmgray-900 font-serif text-xl md:text-2xl">{image.title}</p>}
+              {image.caption && <p className="text-warmgray-600 font-sans text-base md:text-lg mt-1">{image.caption}</p>}
+            </div>
+            <p className="text-warmgray-700 font-sans text-lg font-medium shrink-0">
+              {currentIndex + 1} of {images.length}
+            </p>
+          </div>
 
-        <div className="text-center mt-2 text-white/50 font-sans text-xs">
-          {currentIndex + 1} / {images.length}
-        </div>
+          {hasPrev && (
+            <button
+              onClick={() => onNavigate(currentIndex - 1)}
+              className="absolute -left-5 md:-left-8 top-1/2 -translate-y-1/2 w-14 h-14 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-warmgray-800 text-white hover:bg-warmgray-700 text-3xl md:text-4xl cursor-pointer transition-colors shadow-lg"
+              aria-label="Previous image"
+            >
+              ‹
+            </button>
+          )}
+          {hasNext && (
+            <button
+              onClick={() => onNavigate(currentIndex + 1)}
+              className="absolute -right-5 md:-right-8 top-1/2 -translate-y-1/2 w-14 h-14 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-warmgray-800 text-white hover:bg-warmgray-700 text-3xl md:text-4xl cursor-pointer transition-colors shadow-lg"
+              aria-label="Next image"
+            >
+              ›
+            </button>
+          )}
       </div>
     </div>
   );

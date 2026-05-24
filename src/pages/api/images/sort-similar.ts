@@ -1,19 +1,19 @@
 import type { APIRoute } from 'astro';
-import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import sharp from 'sharp';
+import { readCollection, writeCollection } from '@/lib/markdown';
 
 const STAGING_DIR = join(process.cwd(), '.images-staging', 'collections');
 
-async function fingerprint(filePath: string): Promise<Buffer> {
+async function fingerprint(filePath: string): Promise<Uint8Array> {
   return sharp(filePath)
     .resize(8, 8, { fit: 'fill' })
-    .grayscale()
+    .removeAlpha()
     .raw()
     .toBuffer();
 }
 
-function distance(a: Buffer, b: Buffer): number {
+function distance(a: Uint8Array, b: Uint8Array): number {
   let d = 0;
   for (let i = 0; i < Math.min(a.length, b.length); i++) {
     d += Math.abs(a[i] - b[i]);
@@ -26,10 +26,8 @@ export const POST: APIRoute = async ({ request }) => {
   if (!collection) return new Response('collection required', { status: 400 });
 
   try {
-    const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/collections/${collection}`);
-    if (!res.ok) return new Response('Collection not found', { status: 404 });
-    const data = await res.json();
-    const items: any[] = data.items;
+    const data = await readCollection(collection);
+    const items = data.items;
 
     if (items.length < 2) {
       return new Response(JSON.stringify({ ok: true, order: items.map((_: any, i: number) => i) }), {
@@ -37,8 +35,8 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const prints: (Buffer | null)[] = await Promise.all(
-      items.map(async (item: any) => {
+    const prints: (Uint8Array | null)[] = await Promise.all(
+      items.map(async (item) => {
         if (!item.filename) return null;
         try {
           return await fingerprint(join(STAGING_DIR, collection, item.filename));
@@ -48,7 +46,6 @@ export const POST: APIRoute = async ({ request }) => {
       }),
     );
 
-    // Nearest-neighbor chain sort
     const visited = new Set<number>();
     const order: number[] = [0];
     visited.add(0);
@@ -77,13 +74,8 @@ export const POST: APIRoute = async ({ request }) => {
       visited.add(bestIdx);
     }
 
-    const reordered = order.map((i) => items[i]);
-
-    await fetch(`http://localhost:${process.env.PORT || 3000}/api/collections/${collection}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: reordered }),
-    });
+    data.items = order.map((i) => items[i]);
+    await writeCollection(collection, data);
 
     return new Response(JSON.stringify({ ok: true, order }), {
       headers: { 'Content-Type': 'application/json' },
