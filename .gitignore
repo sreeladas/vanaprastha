@@ -6,3 +6,5 @@ dist/
 .env
 .env.*
 !.env.example
+payload_metadata.sql
+vanaprastha.db
