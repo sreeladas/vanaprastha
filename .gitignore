@@ -1,22 +1,8 @@
-build
-dist / media
-node_modules
+node_modules/
+dist/
+.astro/
+.images-staging/
 .DS_Store
 .env
-.next
-.vercel
-.vscode
-
-# Payload default media upload directory
-public/media/
-
-public/robots.txt
-public/sitemap*.xml
-
-
-# Playwright
-node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
+.env.*
+!.env.example

@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomePage from '../components/react/HomePage';
+import { getCollection } from 'astro:content';
+
+const allCollections = await getCollection('collections');
+const sorted = allCollections.sort((a, b) => a.data.order - b.data.order);
+
+const summaries = sorted.map((c) => ({
+  slug: c.id,
+  title: c.data.title,
+  blurb: c.body?.slice(0, 200) || '',
+  heroImage: c.data.heroImage,
+}));
+
+const imageBaseUrl = import.meta.env.PUBLIC_IMAGE_BASE_URL || '/images';
+---
+
+<BaseLayout>
+  <HomePage collections={summaries} imageBaseUrl={imageBaseUrl} client:load />
+</BaseLayout>
