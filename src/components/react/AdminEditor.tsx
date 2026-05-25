@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, GripVertical, RotateCw, Trash2, Plus, Shuffle, ChevronLeft, ChevronRight, Crosshair } from 'lucide-react';
+import { ArrowLeft, GripVertical, RotateCw, Trash2, Plus, Shuffle, ChevronLeft, ChevronRight, Crosshair, BookOpen } from 'lucide-react';
 import SiteHeader from './SiteHeader';
 import SiteFooter from './SiteFooter';
 
@@ -35,6 +35,12 @@ interface CollectionFull {
   body: string;
 }
 
+interface PdfDesc {
+  code: string;
+  title: string;
+  caption: string;
+}
+
 type View = 'list' | 'edit' | 'create';
 type ThumbSize = 'sm' | 'md' | 'lg';
 const THUMB_PX: Record<ThumbSize, number> = { sm: 64, md: 128, lg: 256 };
@@ -50,6 +56,8 @@ export default function AdminEditor() {
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
   const [cacheBuster, setCacheBuster] = useState(Date.now());
+  const [descBank, setDescBank] = useState<PdfDesc[]>([]);
+  const [selectedForDesc, setSelectedForDesc] = useState<number | null>(null);
 
   const loadCollections = useCallback(async () => {
     const res = await fetch('/api/collections');
@@ -72,12 +80,23 @@ export default function AdminEditor() {
   }
 
   async function openEditor(slug: string) {
-    const res = await fetch(`/api/collections/${slug}`);
+    const [res, bankRes] = await Promise.all([
+      fetch(`/api/collections/${slug}`),
+      fetch('/pdf-descriptions.json'),
+    ]);
     if (res.ok) {
-      setEditing(await res.json());
+      const data = await res.json();
+      setEditing(data);
       setFocusedIndex(null);
       setView('edit');
       window.location.hash = `#edit/${slug}`;
+
+      if (bankRes.ok) {
+        const allBanks = await bankRes.json();
+        const entries: PdfDesc[] = allBanks[slug] || [];
+        setDescBank(entries);
+      }
+      setShowBank(false);
     }
   }
 
@@ -261,6 +280,13 @@ export default function AdminEditor() {
     return `/images/collections/${editing?.slug}/${item.filename}?t=${cacheBuster}`;
   }
 
+  function assignDesc(desc: PdfDesc, index: number) {
+    if (!editing) return;
+    const items = [...editing.items];
+    items[index] = { ...items[index], title: desc.title, caption: desc.caption };
+    setEditing({ ...editing, items });
+  }
+
   const otherCollections = collections.filter((c) => c.slug !== editing?.slug);
 
   return (
@@ -304,46 +330,79 @@ export default function AdminEditor() {
             </div>
 
             {focusedIndex !== null && editing.items[focusedIndex] ? (
-              <ImageDetail
-                item={editing.items[focusedIndex]}
-                index={focusedIndex}
-                total={editing.items.length}
-                src={imgSrc(editing.items[focusedIndex])}
-                otherCollections={otherCollections}
-                onUpdate={(patch) => updateItem(focusedIndex, patch)}
-                onRotate={(deg) => rotateImage(focusedIndex, deg)}
-                onRemove={() => removeItem(focusedIndex)}
-                onMove={(to) => moveToCollection(focusedIndex, to)}
-                onNavigate={setFocusedIndex}
-                onClose={() => setFocusedIndex(null)}
-                busy={busy}
-              />
+              <div className="space-y-6">
+                <ImageDetail
+                  item={editing.items[focusedIndex]}
+                  index={focusedIndex}
+                  total={editing.items.length}
+                  src={imgSrc(editing.items[focusedIndex])}
+                  otherCollections={otherCollections}
+                  onUpdate={(patch) => updateItem(focusedIndex, patch)}
+                  onRotate={(deg) => rotateImage(focusedIndex, deg)}
+                  onRemove={() => removeItem(focusedIndex)}
+                  onMove={(to) => moveToCollection(focusedIndex, to)}
+                  onNavigate={setFocusedIndex}
+                  onClose={() => setFocusedIndex(null)}
+                  busy={busy}
+                />
+                {descBank.length > 0 && (
+                  <DescriptionBank
+                    descriptions={descBank}
+                    usedTitles={new Set(editing.items.map(it => it.title).filter(Boolean))}
+                    onAssign={(desc) => assignDesc(desc, focusedIndex)}
+                  />
+                )}
+              </div>
             ) : (
               <>
                 <CollectionDetails collection={editing} onUpdate={updateEditing} />
 
-                <ImageList
-                  collection={editing}
-                  thumbSize={thumbSize}
-                  otherCollections={otherCollections}
-                  onThumbSizeChange={setThumbSize}
-                  onClickImage={setFocusedIndex}
-                  onUpdateItem={updateItem}
-                  onRemoveItem={removeItem}
-                  onReorder={reorderItem}
-                  onRotate={rotateImage}
-                  onMoveToCollection={moveToCollection}
-                  onAddUrl={addImageFromUrl}
-                  onAddLocal={addLocalImage}
-                  onSortSimilar={sortBySimilarity}
-                  imgSrc={imgSrc}
-                  busy={busy}
-                />
+                <div className={descBank.length > 0 ? 'grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6' : ''}>
+                  <div>
+                    <ImageList
+                      collection={editing}
+                      thumbSize={thumbSize}
+                      otherCollections={otherCollections}
+                      onThumbSizeChange={setThumbSize}
+                      onClickImage={setFocusedIndex}
+                      onUpdateItem={updateItem}
+                      onRemoveItem={removeItem}
+                      onReorder={reorderItem}
+                      onRotate={rotateImage}
+                      onMoveToCollection={moveToCollection}
+                      onAddUrl={addImageFromUrl}
+                      onAddLocal={addLocalImage}
+                      onSortSimilar={sortBySimilarity}
+                      imgSrc={imgSrc}
+                      busy={busy}
+                      selectedIndex={selectedForDesc}
+                      onSelectForDesc={setSelectedForDesc}
+                    />
 
-                <div className="flex justify-end mt-6">
-                  <Button variant="destructive" size="sm" onClick={() => deleteCollection(editing.slug)}>
-                    <Trash2 className="size-4" /> Delete Collection
-                  </Button>
+                    <div className="flex justify-end mt-6">
+                      <Button variant="destructive" size="sm" onClick={() => deleteCollection(editing.slug)}>
+                        <Trash2 className="size-4" /> Delete Collection
+                      </Button>
+                    </div>
+                  </div>
+
+                  {descBank.length > 0 && (
+                    <div className="lg:sticky lg:top-4 lg:self-start">
+                      <DescriptionBank
+                        descriptions={descBank}
+                        usedTitles={new Set(editing.items.map(it => it.title).filter(Boolean))}
+                        onAssign={(desc) => {
+                          if (selectedForDesc !== null) {
+                            assignDesc(desc, selectedForDesc);
+                            if (selectedForDesc < editing.items.length - 1) {
+                              setSelectedForDesc(selectedForDesc + 1);
+                            }
+                          }
+                        }}
+                        selectedIndex={selectedForDesc}
+                      />
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -521,7 +580,7 @@ function CollectionDetails({ collection, onUpdate }: {
   );
 }
 
-function ImageList({ collection, thumbSize, otherCollections, onThumbSizeChange, onClickImage, onUpdateItem, onRemoveItem, onReorder, onRotate, onMoveToCollection, onAddUrl, onAddLocal, onSortSimilar, imgSrc, busy }: {
+function ImageList({ collection, thumbSize, otherCollections, onThumbSizeChange, onClickImage, onUpdateItem, onRemoveItem, onReorder, onRotate, onMoveToCollection, onAddUrl, onAddLocal, onSortSimilar, imgSrc, busy, selectedIndex, onSelectForDesc }: {
   collection: CollectionFull;
   thumbSize: ThumbSize;
   otherCollections: CollectionSummary[];
@@ -537,6 +596,8 @@ function ImageList({ collection, thumbSize, otherCollections, onThumbSizeChange,
   onSortSimilar: () => void;
   imgSrc: (item: Item) => string;
   busy: boolean;
+  selectedIndex?: number | null;
+  onSelectForDesc?: (i: number) => void;
 }) {
   const px = THUMB_PX[thumbSize];
   const dragItem = useRef<number | null>(null);
@@ -604,7 +665,8 @@ function ImageList({ collection, thumbSize, otherCollections, onThumbSizeChange,
               onDragOver={(e) => handleDragOver(e, i)}
               onDrop={() => handleDrop(i)}
               onDragEnd={handleDragEnd}
-              className={`flex items-start gap-3 p-3 rounded-md border border-border bg-muted/30 transition-opacity ${dragOver === i ? 'border-primary/50 bg-accent/50' : ''} ${dragItem.current === i ? 'opacity-50' : ''}`}
+              onClick={() => onSelectForDesc?.(i)}
+              className={`flex items-start gap-3 p-3 rounded-md border transition-all cursor-pointer ${selectedIndex === i ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border bg-muted/30'} ${dragOver === i ? 'border-primary/50 bg-accent/50' : ''} ${dragItem.current === i ? 'opacity-50' : ''}`}
             >
               <div className="flex items-center self-stretch cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground pr-1">
                 <GripVertical className="size-4" />
@@ -735,6 +797,83 @@ function CollectionList({ collections, onEdit, onDelete, onCreate, onReorder }: 
         ))}
       </div>
     </>
+  );
+}
+
+function DescriptionBank({ descriptions, usedTitles, onAssign, selectedIndex }: {
+  descriptions: PdfDesc[];
+  usedTitles: Set<string>;
+  onAssign: (desc: PdfDesc) => void;
+  selectedIndex?: number | null;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const [showAssigned, setShowAssigned] = useState(false);
+  const unassigned = descriptions.filter(d => !usedTitles.has(d.title));
+  const assigned = descriptions.filter(d => usedTitles.has(d.title));
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="size-4" />
+            PDF ({unassigned.length} remaining)
+          </CardTitle>
+          <Button variant="ghost" size="sm" onClick={() => setExpanded(!expanded)}>
+            {expanded ? 'Collapse' : 'Expand'}
+          </Button>
+        </div>
+      </CardHeader>
+      {expanded && (
+        <CardContent>
+          {selectedIndex === null || selectedIndex === undefined ? (
+            <p className="text-xs text-muted-foreground mb-3">
+              Click an image on the left to select it, then click a description here to assign.
+            </p>
+          ) : (
+            <p className="text-xs text-primary font-medium mb-3">
+              Assigning to image #{selectedIndex + 1}. Click a description below.
+            </p>
+          )}
+          <div className="space-y-1.5 max-h-[70vh] overflow-y-auto">
+            {unassigned.map((desc) => (
+              <button
+                key={desc.code}
+                onClick={() => onAssign(desc)}
+                disabled={selectedIndex === null || selectedIndex === undefined}
+                className="w-full text-left p-2 rounded-md border border-border bg-muted/30 hover:bg-accent/50 hover:border-primary/50 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <div className="text-[10px] text-muted-foreground font-mono">{desc.code}</div>
+                <div className="text-sm font-medium">{desc.title}</div>
+                {desc.caption && <div className="text-[11px] text-muted-foreground">{desc.caption}</div>}
+              </button>
+            ))}
+            {assigned.length > 0 && (
+              <>
+                <button
+                  onClick={() => setShowAssigned(!showAssigned)}
+                  className="w-full text-xs text-muted-foreground pt-2 border-t border-border mt-2 cursor-pointer hover:text-foreground"
+                >
+                  {showAssigned ? 'Hide' : 'Show'} {assigned.length} assigned
+                </button>
+                {showAssigned && assigned.map((desc) => (
+                  <button
+                    key={desc.code}
+                    onClick={() => onAssign(desc)}
+                    disabled={selectedIndex === null || selectedIndex === undefined}
+                    className="w-full text-left p-2 rounded-md border border-border bg-muted/10 opacity-40 hover:opacity-100 hover:bg-accent/50 hover:border-primary/50 cursor-pointer transition-all disabled:cursor-not-allowed"
+                  >
+                    <div className="text-[10px] text-muted-foreground font-mono">{desc.code}</div>
+                    <div className="text-sm font-medium">{desc.title}</div>
+                    {desc.caption && <div className="text-[11px] text-muted-foreground">{desc.caption}</div>}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+        </CardContent>
+      )}
+    </Card>
   );
 }
 

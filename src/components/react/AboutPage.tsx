@@ -1,5 +1,5 @@
-import SiteHeader from './SiteHeader';
-import SiteFooter from './SiteFooter';
+import SiteHeader from './SiteHeader'
+import SiteFooter from './SiteFooter'
 
 export default function AboutPage() {
   return (
@@ -18,10 +18,10 @@ export default function AboutPage() {
           <p>
             As an administrator, he represented the finest traditions of public service. He firmly
             believed in the principles of good governance and worked tirelessly to ensure the
-            efficient and ethical delivery of public services. His approach to administration extended
-            beyond routine governance, encompassing a genuine commitment to cultural enrichment,
-            academic engagement, and the promotion of libraries and sports as pillars of a
-            well-rounded society.
+            efficient and ethical delivery of public services. His approach to administration
+            extended beyond routine governance, encompassing a genuine commitment to cultural
+            enrichment, academic engagement, and the promotion of libraries and sports as pillars of
+            a well-rounded society.
           </p>
           <p>
             During his tenure as District Magistrate of Dehradun, he was known for his
@@ -31,10 +31,10 @@ export default function AboutPage() {
           <p>
             Later, as Chief Secretary of Uttarakhand, Surjit Das played a transformative role in the
             development of key institutions across the state. His vision and dedication were
-            instrumental in establishing and strengthening several significant initiatives, including
-            the Civil Services Institute, the relocation and expansion of the Doon Library &amp;
-            Research Centre, and the upgrade of the Doon District Hospital into the Doon Medical
-            College &amp; Hospital.
+            instrumental in establishing and strengthening several significant initiatives,
+            including the Civil Services Institute, the relocation and expansion of the Doon Library
+            &amp; Research Centre, and the upgrade of the Doon District Hospital into the Doon
+            Medical College &amp; Hospital.
           </p>
           <p>
             His legacy lives on through the institutions he helped shape and the countless lives he
@@ -61,9 +61,34 @@ export default function AboutPage() {
             experience the legacy of a man who saw beauty in detail and history in everything.
           </p>
         </div>
+
+        <hr className="my-12 border-warmgray-200" />
+
+        <div className="space-y-6 font-sans text-warmgray-700 leading-relaxed">
+          <h2 className="text-2xl font-serif font-semibold text-warmgray-800">Acknowledgements</h2>
+          <p>
+            The detailed documentation and cataloguing of this collection was carried out by Anish
+            Gusain, Soniya Rawat, and Prajjwal Sonkar - students of the School of Design, Doon
+            University, Dehradun - as part of an academic internship under the guidance of Priyanka
+            Tolia and sponsored by Chitku Design Studio. Their careful work in photographing,
+            researching, and describing each piece made this digital showcase possible.
+          </p>
+          <p>
+            We are grateful to Abhay Mishra for his invaluable expertise during the documentation of
+            the coins and stamps, which formed an integral part of the collection.
+          </p>
+          <p>
+            Our thanks also go to Parwati and Manish for their warmth, care, and practical support
+            throughout the documentation process at Vanaprastha.
+          </p>
+          <p>
+            We gratefully acknowledge the Doon Library, Dehradun, which provided essential resources
+            for research and reference.
+          </p>
+        </div>
       </main>
 
       <SiteFooter />
     </div>
-  );
+  )
 }
