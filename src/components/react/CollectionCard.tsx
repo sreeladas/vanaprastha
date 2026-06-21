@@ -20,7 +20,7 @@ export default function CollectionCard({ slug, title, blurb, heroImage, heroFocu
           <img
             src={imgSrc}
             alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             style={{ objectPosition: heroFocus || '50% 50%' }}
             loading="lazy"
           />

@@ -19,13 +19,20 @@ export function resolveImageSrc(item: GalleryItem, collectionSlug: string, image
   return `${imageBaseUrl}/collections/${collectionSlug}/${item.filename}`;
 }
 
+// Treat empty or quote/whitespace-only text (e.g. a stray "'") as no text.
+function cleanText(value?: string): string | undefined {
+  const trimmed = (value ?? '').trim();
+  if (/^['"]*$/.test(trimmed)) return undefined;
+  return trimmed;
+}
+
 export default function Gallery({ items, collectionSlug, imageBaseUrl }: GalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const images = items.map((item) => ({
     src: resolveImageSrc(item, collectionSlug, imageBaseUrl),
-    title: item.title,
-    caption: item.caption,
+    title: cleanText(item.title),
+    caption: cleanText(item.caption),
   }));
 
   if (items.length === 0) {
@@ -48,7 +55,7 @@ export default function Gallery({ items, collectionSlug, imageBaseUrl }: Gallery
             <img
               src={images[i].src}
               alt={item.title || item.filename || ''}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
               loading="lazy"
             />
           </button>

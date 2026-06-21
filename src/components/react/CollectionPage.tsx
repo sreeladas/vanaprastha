@@ -46,7 +46,7 @@ export default function CollectionPage({ title, blurb, heroImage, heroFocus, ite
 
           <div className="py-8">
             <div
-              className="prose prose-warmgray prose-lg font-sans text-foreground leading-relaxed max-w-none [&_p]:mb-6 [&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:text-foreground [&_h2]:font-serif [&_ul]:my-4 [&_ul]:space-y-2 [&_li]:leading-relaxed [&_iframe]:rounded-lg [&_iframe]:my-6 [&_a]:text-foreground [&_a]:underline [&_a:hover]:text-muted-foreground [&_hr]:my-8 [&_hr]:border-warmgray-200 [&_em]:text-muted-foreground [&_em]:text-base"
+              className="prose prose-warmgray prose-lg font-sans text-foreground text-lg leading-relaxed max-w-none [&_p]:text-lg [&_p]:mb-6 [&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:text-2xl [&_h2]:text-foreground [&_h2]:font-serif [&_ul]:my-4 [&_ul]:space-y-2 [&_li]:text-lg [&_li]:leading-relaxed [&_iframe]:rounded-lg [&_iframe]:my-6 [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-foreground [&_hr]:my-8 [&_hr]:border-warmgray-200 [&_em]:text-muted-foreground [&_em]:text-lg"
               dangerouslySetInnerHTML={{ __html: blurbHtml }}
             />
           </div>
@@ -56,7 +56,7 @@ export default function CollectionPage({ title, blurb, heroImage, heroFocus, ite
           </div>
 
           <div className="pb-8">
-            <a href="/" className="text-muted-foreground hover:text-foreground font-sans text-base transition-colors">
+            <a href="/" className="inline-flex items-center min-h-11 text-accent underline underline-offset-2 hover:text-foreground font-sans text-base transition-colors">
               ← Back to all collections
             </a>
           </div>

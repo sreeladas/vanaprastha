@@ -8,11 +8,11 @@ export default function SiteHeader() {
         >
           Vanaprastha
         </a>
-        <div className="flex gap-6 text-base font-sans">
-          <a href="/" className="text-muted-foreground hover:text-foreground transition-colors">
+        <div className="flex items-center gap-6 text-base font-sans">
+          <a href="/" className="inline-flex items-center py-3 text-muted-foreground hover:text-foreground transition-colors">
             Collections
           </a>
-          <a href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
+          <a href="/about" className="inline-flex items-center py-3 text-muted-foreground hover:text-foreground transition-colors">
             About
           </a>
         </div>

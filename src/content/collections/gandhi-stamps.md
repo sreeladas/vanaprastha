@@ -31,4 +31,4 @@ In this video, Surjit Das discusses his lifelong passion for collecting and the 
 
 ---
 
-*Hero image: "Mahatma Gandhi" by Central Press, 1930. Photo by Central Press/Getty Images. Source: Hulton Archive, via Google Arts and Culture.*
+*Banner image: "Mahatma Gandhi" by Central Press, 1930. Photo by Central Press/Getty Images. Source: Hulton Archive, via Google Arts and Culture.*

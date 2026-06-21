@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 
 @theme {
-  --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-serif: Georgia, "Times New Roman", Times, serif;
   --font-sans: system-ui, -apple-system, sans-serif;
 
   --color-cream: #faf7f2;
@@ -27,9 +27,12 @@
   --color-secondary-foreground: #4a4339;
   --color-muted: #f0eeeb;
   --color-muted-foreground: #756b5e;
-  --color-accent: #f0eeeb;
-  --color-accent-foreground: #4a4339;
-  --color-destructive: #dc2626;
+  /* Accent is the one in-palette colour: a quiet, low-chroma terracotta for
+     links, the primary CTA accent and interactive highlights. */
+  --color-accent: #a8603f;
+  --color-accent-foreground: #faf7f2;
+  /* Warm brick, in keeping with the desaturated palette (was #dc2626). */
+  --color-destructive: #9e4636;
   --color-border: #f0eeeb;
   --color-input: #e0dcd6;
   --color-ring: #4a4339;
@@ -37,6 +40,89 @@
   --color-popover-foreground: #3a342c;
 
   --radius: 0.5rem;
+}
+
+/* Dark theme — a warm, low-key inversion of the light palette so the scattered
+   `dark:` variants shipped by the shadcn primitives resolve to real values.
+   Applies on system preference and via an explicit `.dark` class. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-cream: #1b1814;
+    --color-warmgray-50: #221e19;
+    --color-warmgray-100: #2b261f;
+    --color-warmgray-200: #3a342c;
+    --color-warmgray-300: #4a4339;
+    --color-warmgray-400: #5e554a;
+    --color-warmgray-500: #8f8577;
+    --color-warmgray-600: #a89f93;
+    --color-warmgray-700: #c8c2b8;
+    --color-warmgray-800: #e0dcd6;
+    --color-warmgray-900: #ece7df;
+
+    --color-background: #1b1814;
+    --color-foreground: #ece7df;
+    --color-card: #242019;
+    --color-card-foreground: #ece7df;
+    --color-primary: #e7d8c4;
+    --color-primary-foreground: #211d18;
+    --color-secondary: #2b261f;
+    --color-secondary-foreground: #ece7df;
+    --color-muted: #2b261f;
+    --color-muted-foreground: #b3a89a;
+    --color-accent: #cf8662;
+    --color-accent-foreground: #211d18;
+    --color-destructive: #c75a48;
+    --color-border: #2b261f;
+    --color-input: #3a342c;
+    --color-ring: #cf8662;
+    --color-popover: #242019;
+    --color-popover-foreground: #ece7df;
+  }
+}
+
+.dark {
+  --color-cream: #1b1814;
+  --color-warmgray-50: #221e19;
+  --color-warmgray-100: #2b261f;
+  --color-warmgray-200: #3a342c;
+  --color-warmgray-300: #4a4339;
+  --color-warmgray-400: #5e554a;
+  --color-warmgray-500: #8f8577;
+  --color-warmgray-600: #a89f93;
+  --color-warmgray-700: #c8c2b8;
+  --color-warmgray-800: #e0dcd6;
+  --color-warmgray-900: #ece7df;
+
+  --color-background: #1b1814;
+  --color-foreground: #ece7df;
+  --color-card: #242019;
+  --color-card-foreground: #ece7df;
+  --color-primary: #e7d8c4;
+  --color-primary-foreground: #211d18;
+  --color-secondary: #2b261f;
+  --color-secondary-foreground: #ece7df;
+  --color-muted: #2b261f;
+  --color-muted-foreground: #b3a89a;
+  --color-accent: #cf8662;
+  --color-accent-foreground: #211d18;
+  --color-destructive: #c75a48;
+  --color-border: #2b261f;
+  --color-input: #3a342c;
+  --color-ring: #cf8662;
+  --color-popover: #242019;
+  --color-popover-foreground: #ece7df;
+}
+
+/* Respect reduced-motion: neutralise transitions/animations site-wide. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @layer base {

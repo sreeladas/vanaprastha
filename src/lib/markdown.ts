@@ -65,6 +65,14 @@ export function parseMarkdown(raw: string): CollectionData {
   return { title: data.title || '', order: data.order ?? 0, heroImage: data.heroImage, heroFocus: data.heroFocus, pdfPage: data.pdfPage, items, body };
 }
 
+// Trim a frontmatter text field and treat quote/whitespace-only values as empty,
+// so stray ditto-marks (e.g. a lone "'") never get written back.
+function cleanField(value?: string): string {
+  const trimmed = (value ?? '').trim();
+  if (/^['"]*$/.test(trimmed)) return '';
+  return trimmed.replace(/\\/g, '').replace(/"/g, "'");
+}
+
 export function serializeMarkdown(data: CollectionData): string {
   const lines = ['---'];
   lines.push(`title: "${data.title || ''}"`);
@@ -79,8 +87,10 @@ export function serializeMarkdown(data: CollectionData): string {
       const fields: string[] = [];
       if (item.filename) fields.push(`filename: "${item.filename}"`);
       if (item.url) fields.push(`url: "${item.url}"`);
-      fields.push(`title: "${(item.title ?? '').replace(/\\/g, '').replace(/"/g, "'")}"`);
-      if (item.caption) fields.push(`caption: "${item.caption.replace(/\\/g, '').replace(/"/g, "'")}"`);
+      const title = cleanField(item.title);
+      const caption = cleanField(item.caption);
+      if (title) fields.push(`title: "${title}"`);
+      if (caption) fields.push(`caption: "${caption}"`);
       lines.push(`  - ${fields[0]}`);
       for (let i = 1; i < fields.length; i++) {
         lines.push(`    ${fields[i]}`);
