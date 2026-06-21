@@ -4,15 +4,15 @@ export default function SiteHeader() {
       <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <a
           href="/"
-          className="text-xl font-semibold tracking-tight text-warmgray-800 hover:text-warmgray-600 transition-colors font-serif"
+          className="text-2xl font-semibold tracking-tight text-foreground hover:text-muted-foreground transition-colors font-serif"
         >
           Vanaprastha
         </a>
-        <div className="flex gap-6 text-sm font-sans">
-          <a href="/" className="text-warmgray-600 hover:text-warmgray-900 transition-colors">
+        <div className="flex gap-6 text-base font-sans">
+          <a href="/" className="text-muted-foreground hover:text-foreground transition-colors">
             Collections
           </a>
-          <a href="/about" className="text-warmgray-600 hover:text-warmgray-900 transition-colors">
+          <a href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
             About
           </a>
         </div>

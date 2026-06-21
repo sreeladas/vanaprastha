@@ -3,13 +3,13 @@ import SiteFooter from './SiteFooter'
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-cream text-warmgray-900">
+    <div className="min-h-screen flex flex-col bg-cream text-foreground">
       <SiteHeader />
 
       <main className="flex-1 max-w-3xl mx-auto px-6 py-16">
-        <h1 className="text-4xl font-serif font-bold text-warmgray-900 mb-8">Surjit Das</h1>
+        <h1 className="text-4xl font-serif font-bold text-foreground mb-8">Surjit Das</h1>
 
-        <div className="space-y-6 font-sans text-warmgray-700 leading-relaxed">
+        <div className="space-y-6 font-sans text-lg text-foreground leading-relaxed">
           <p>
             Surjit Das was a man of many dimensions - a dedicated civil servant, a thoughtful
             scholar, a passionate cricket enthusiast, a connoisseur of culture, and above all, a
@@ -45,8 +45,8 @@ export default function AboutPage() {
 
         <hr className="my-12 border-warmgray-200" />
 
-        <div className="space-y-6 font-sans text-warmgray-700 leading-relaxed">
-          <h2 className="text-2xl font-serif font-semibold text-warmgray-800">About Vanaprastha</h2>
+        <div className="space-y-6 font-sans text-lg text-foreground leading-relaxed">
+          <h2 className="text-2xl font-serif font-semibold text-foreground">About Vanaprastha</h2>
           <p>
             Vanaprastha was more than a residence; it was an extension of his mind and spirit -
             quiet, reflective, and richly layered. Within its walls, he curated an extraordinary
@@ -64,8 +64,8 @@ export default function AboutPage() {
 
         <hr className="my-12 border-warmgray-200" />
 
-        <div className="space-y-6 font-sans text-warmgray-700 leading-relaxed">
-          <h2 className="text-2xl font-serif font-semibold text-warmgray-800">Acknowledgements</h2>
+        <div className="space-y-6 font-sans text-lg text-foreground leading-relaxed">
+          <h2 className="text-2xl font-serif font-semibold text-foreground">Acknowledgements</h2>
           <p>
             The detailed documentation and cataloguing of this collection was carried out by Anish
             Gusain, Soniya Rawat, and Prajjwal Sonkar - students of the School of Design, Doon

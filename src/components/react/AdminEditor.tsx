@@ -442,11 +442,11 @@ function ImageDetail({ item, index, total, src, otherCollections, onUpdate, onRo
         <Card>
           <CardContent className="space-y-4 pt-6">
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">Title</label>
+              <label className="block text-sm text-muted-foreground mb-1">Title</label>
               <Input value={item.title || ''} onChange={(e) => onUpdate({ title: e.target.value })} />
             </div>
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">Caption</label>
+              <label className="block text-sm text-muted-foreground mb-1">Caption</label>
               <Textarea value={item.caption || ''} onChange={(e) => onUpdate({ caption: e.target.value })} rows={4} />
             </div>
             <div className="text-[11px] text-muted-foreground font-mono break-all">
@@ -474,7 +474,7 @@ function ImageDetail({ item, index, total, src, otherCollections, onUpdate, onRo
 
             {otherCollections.length > 0 && (
               <div className="pt-2">
-                <label className="block text-xs text-muted-foreground mb-1">Move to collection</label>
+                <label className="block text-sm text-muted-foreground mb-1">Move to collection</label>
                 <select
                   onChange={(e) => { if (e.target.value) { onMove(e.target.value); e.target.value = ''; } }}
                   defaultValue=""
@@ -527,21 +527,21 @@ function CollectionDetails({ collection, onUpdate }: {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">Title</label>
+              <label className="block text-sm text-muted-foreground mb-1">Title</label>
               <Input value={collection.title} onChange={(e) => onUpdate({ title: e.target.value })} />
             </div>
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">Order</label>
+              <label className="block text-sm text-muted-foreground mb-1">Order</label>
               <Input type="number" value={collection.order} onChange={(e) => onUpdate({ order: Number(e.target.value) })} />
             </div>
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">Hero Image</label>
+            <label className="block text-sm text-muted-foreground mb-1">Hero Image</label>
             <Input value={collection.heroImage || ''} onChange={(e) => onUpdate({ heroImage: e.target.value || undefined })} className="font-mono" />
           </div>
           {heroSrc && (
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">
+              <label className="block text-sm text-muted-foreground mb-1">
                 <Crosshair className="size-3 inline mr-1" />
                 Focal point (click to set)
               </label>
@@ -631,7 +631,7 @@ function ImageList({ collection, thumbSize, otherCollections, onThumbSizeChange,
         <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle>Images ({collection.items.length})</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex border border-input rounded-md overflow-hidden text-xs">
+            <div className="flex border border-input rounded-md overflow-hidden text-sm">
               {(['sm', 'md', 'lg'] as ThumbSize[]).map((s) => (
                 <button key={s} onClick={() => onThumbSizeChange(s)}
                   className={`px-2.5 py-1 cursor-pointer transition-colors ${thumbSize === s ? 'bg-primary text-primary-foreground' : 'bg-transparent hover:bg-accent'}`}>
@@ -699,7 +699,7 @@ function ImageList({ collection, thumbSize, otherCollections, onThumbSizeChange,
 
               <div className="flex-1 min-w-0 space-y-1.5">
                 <Input value={item.title || ''} onChange={(e) => onUpdateItem(i, { title: e.target.value })} placeholder="Title" className="h-8 text-sm" />
-                <Textarea value={item.caption || ''} onChange={(e) => onUpdateItem(i, { caption: e.target.value })} placeholder="Caption" rows={2} className="text-xs leading-relaxed resize-y" />
+                <Textarea value={item.caption || ''} onChange={(e) => onUpdateItem(i, { caption: e.target.value })} placeholder="Caption" rows={2} className="text-sm leading-relaxed resize-y" />
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-muted-foreground font-mono truncate flex-1">
                     {item.url ? `URL: ${item.url}` : item.filename}
@@ -784,7 +784,7 @@ function CollectionList({ collections, onEdit, onDelete, onCreate, onReorder }: 
             </div>
             <div className="min-w-0 flex-1">
               <div className="font-semibold">{c.title}</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-sm text-muted-foreground mt-1">
                 {c.slug} &middot; {c.itemCount} images
               </div>
             </div>
@@ -827,11 +827,11 @@ function DescriptionBank({ descriptions, usedTitles, onAssign, selectedIndex }: 
       {expanded && (
         <CardContent>
           {selectedIndex === null || selectedIndex === undefined ? (
-            <p className="text-xs text-muted-foreground mb-3">
+            <p className="text-sm text-muted-foreground mb-3">
               Click an image on the left to select it, then click a description here to assign.
             </p>
           ) : (
-            <p className="text-xs text-primary font-medium mb-3">
+            <p className="text-sm text-primary font-medium mb-3">
               Assigning to image #{selectedIndex + 1}. Click a description below.
             </p>
           )}
@@ -852,7 +852,7 @@ function DescriptionBank({ descriptions, usedTitles, onAssign, selectedIndex }: 
               <>
                 <button
                   onClick={() => setShowAssigned(!showAssigned)}
-                  className="w-full text-xs text-muted-foreground pt-2 border-t border-border mt-2 cursor-pointer hover:text-foreground"
+                  className="w-full text-sm text-muted-foreground pt-2 border-t border-border mt-2 cursor-pointer hover:text-foreground"
                 >
                   {showAssigned ? 'Hide' : 'Show'} {assigned.length} assigned
                 </button>

@@ -17,18 +17,18 @@ interface HomePageProps {
 
 export default function HomePage({ collections, imageBaseUrl }: HomePageProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-cream text-warmgray-900">
+    <div className="min-h-screen flex flex-col bg-cream text-foreground">
       <SiteHeader />
 
       <main className="flex-1">
         <section className="max-w-4xl mx-auto px-6 py-16 text-center">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-warmgray-900 mb-6 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6 leading-tight">
             The Collections of Surjit Das
-            <span className="block text-2xl md:text-3xl font-normal text-warmgray-600 mt-2">
+            <span className="block text-2xl md:text-3xl font-normal text-muted-foreground mt-2">
               at Vanaprastha
             </span>
           </h1>
-          <p className="text-warmgray-600 font-sans max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-muted-foreground font-sans max-w-2xl mx-auto leading-relaxed">
             A tribute to the discerning eye and profound curiosity of Surjit Das - a visionary
             administrator, a thoughtful collector, and a true connoisseur of culture.
           </p>

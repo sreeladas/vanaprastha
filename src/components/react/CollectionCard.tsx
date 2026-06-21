@@ -25,14 +25,14 @@ export default function CollectionCard({ slug, title, blurb, heroImage, heroFocu
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-warmgray-400 font-sans text-sm">
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground font-sans text-base">
             No image
           </div>
         )}
       </div>
       <div className="p-5">
-        <h2 className="text-lg font-semibold text-warmgray-800 mb-2 font-serif">{title}</h2>
-        <p className="text-sm text-warmgray-600 font-sans line-clamp-3 leading-relaxed">{blurb}</p>
+        <h2 className="text-xl font-semibold text-foreground mb-2 font-serif">{title}</h2>
+        <p className="text-lg text-muted-foreground font-sans line-clamp-3 leading-relaxed">{blurb}</p>
       </div>
     </a>
   );

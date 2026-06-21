@@ -51,10 +51,10 @@ export default function Lightbox({ images, currentIndex, onClose, onNavigate }: 
 
           <div className="shrink-0 mt-4 pt-3 border-t border-warmgray-100 flex items-center justify-between gap-4">
             <div className="flex-1 text-center">
-              {image.title && <p className="text-warmgray-900 font-serif text-xl md:text-2xl">{image.title}</p>}
-              {image.caption && <p className="text-warmgray-600 font-sans text-base md:text-lg mt-1">{image.caption}</p>}
+              {image.title && <p className="text-foreground font-serif text-xl md:text-2xl">{image.title}</p>}
+              {image.caption && <p className="text-muted-foreground font-sans text-lg md:text-xl mt-1">{image.caption}</p>}
             </div>
-            <p className="text-warmgray-700 font-sans text-lg font-medium shrink-0">
+            <p className="text-muted-foreground font-sans text-lg font-medium shrink-0">
               {currentIndex + 1} of {images.length}
             </p>
           </div>

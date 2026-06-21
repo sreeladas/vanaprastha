@@ -30,7 +30,7 @@ export default function Gallery({ items, collectionSlug, imageBaseUrl }: Gallery
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-16 text-warmgray-400 font-sans">
+      <div className="text-center py-16 text-muted-foreground font-sans">
         <p>Images coming soon</p>
       </div>
     );
