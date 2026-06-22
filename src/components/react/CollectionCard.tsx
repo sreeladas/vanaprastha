@@ -13,7 +13,7 @@ export default function CollectionCard({ slug, title, blurb, heroImage, heroFocu
   return (
     <a
       href={`/collections/${slug}`}
-      className="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-warmgray-100"
+      className="group block bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-warmgray-100"
     >
       <div className="aspect-[4/3] bg-warmgray-100 overflow-hidden">
         {imgSrc ? (
